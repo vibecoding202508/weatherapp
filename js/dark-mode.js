@@ -28,6 +28,9 @@ const DarkMode = {
             DOM.toggleIcon.className = 'fas fa-sun';
         }
         localStorage.setItem('darkMode', 'true');
+        
+        // Reapply weather background colors for dark mode
+        DarkMode.reapplyWeatherBackground();
     },
 
     // Disable dark mode
@@ -37,6 +40,9 @@ const DarkMode = {
             DOM.toggleIcon.className = 'fas fa-moon';
         }
         localStorage.setItem('darkMode', 'false');
+        
+        // Reapply weather background colors for light mode
+        DarkMode.reapplyWeatherBackground();
     },
 
     // Toggle dark mode
@@ -58,6 +64,20 @@ const DarkMode = {
     // Get current theme preference
     getPreference: () => {
         return localStorage.getItem('darkMode') === 'true' ? 'dark' : 'light';
+    },
+
+    // Reapply weather background colors when dark mode changes
+    reapplyWeatherBackground: () => {
+        // Get current weather data from state
+        const weatherData = StateManager.getWeatherData();
+        
+        if (weatherData && weatherData.current) {
+            // Reapply weather background with current condition
+            WeatherDisplay.applyWeatherBackground(weatherData.current.condition.text, weatherData.current);
+        } else {
+            // No weather data available, reset to default background for current mode
+            WeatherDisplay.resetToDefaultBackground();
+        }
     }
 };
 
