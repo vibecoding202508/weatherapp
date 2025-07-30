@@ -36,7 +36,7 @@
         <div class="error" id="error" style="display: none;">
             <i class="fas fa-exclamation-triangle"></i>
             <p id="error-message"></p>
-            <button onclick="getWeatherData()">Try Again</button>
+            <button onclick="WeatherApp.restart()">Try Again</button>
         </div>
 
         <div class="weather-content" id="weather-content" style="display: none;">
@@ -93,6 +93,21 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <!-- Core modules - order matters for dependencies -->
+    <script src="js/config.js"></script>
+    <script src="js/dom.js"></script>
+    <script src="js/state.js"></script>
+    <script src="js/utils.js"></script>
+    
+    <!-- Feature modules -->
+    <script src="js/dark-mode.js"></script>
+    <script src="js/search.js"></script>
+    <script src="js/weather-api.js"></script>
+    <script src="js/weather-display.js"></script>
+    <script src="js/weather-animations.js"></script>
+    <script src="js/weather-alerts.js"></script>
+    
+    <!-- Main application -->
+    <script src="js/app.js"></script>
 </body>
 </html>
