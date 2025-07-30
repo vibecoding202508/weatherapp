@@ -27,6 +27,22 @@ const WeatherDisplay = {
         DOMUtils.setText(DOM.visibility, `${current.vis_km} km`);
         DOMUtils.setText(DOM.humidity, `${current.humidity}%`);
         DOMUtils.setText(DOM.wind, `${current.wind_kph} km/h ${current.wind_dir}`);
+        
+        // UV Index display and warning
+        if (current.uv !== undefined) {
+            DOMUtils.setText(DOM.uvIndex, current.uv);
+            
+            // Show UV warning if UV index is higher than 3
+            if (current.uv > 3) {
+                DOM.uvWarning.style.display = 'flex';
+                console.log(`UV Index is ${current.uv} - showing sunscreen warning`);
+            } else {
+                DOM.uvWarning.style.display = 'none';
+            }
+        } else {
+            DOMUtils.setText(DOM.uvIndex, 'N/A');
+            DOM.uvWarning.style.display = 'none';
+        }
 
         // 3-day forecast
         WeatherDisplay.displayForecast(data.forecast.forecastday);

@@ -15,6 +15,8 @@ const DOM = {
     visibility: document.getElementById('visibility'),
     humidity: document.getElementById('humidity'),
     wind: document.getElementById('wind'),
+    uvIndex: document.getElementById('uv-index'),
+    uvWarning: document.getElementById('uv-warning'),
     forecastContainer: document.getElementById('forecast-container'),
 
     // Weather alerts elements

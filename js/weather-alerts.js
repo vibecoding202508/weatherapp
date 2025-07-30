@@ -12,7 +12,7 @@ const WeatherAlerts = {
             
             // Try multiple CORS proxy services for better reliability
             const proxies = [
-                `https://api.allorigins.win/get?url=${encodeURIComponent(feedUrl)}`,
+                // `https://api.allorigins.win/get?url=${encodeURIComponent(feedUrl)}`,
                 `https://cors.eu.org/${feedUrl}`,
                 `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(feedUrl)}`
             ];
