@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Weather</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <div class="dark-mode-toggle" id="dark-mode-toggle">
+            <i class="fas fa-moon" id="toggle-icon"></i>
+        </div>
+        <header>
+            <h1><i class="fas fa-cloud-sun"></i> Simple Weather</h1>
+            <div class="search-container">
+                <div class="search-box">
+                    <input type="text" id="location-search" placeholder="Search for a city..." autocomplete="off">
+                    <button id="search-btn" type="button">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+                <button id="current-location-btn" class="current-location-btn" title="Use current location">
+                    <i class="fas fa-crosshairs"></i>
+                    <span>Current Location</span>
+                </button>
+            </div>
+        </header>
+
+        <div class="loading" id="loading">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Getting your location and weather data...</p>
+        </div>
+
+        <div class="error" id="error" style="display: none;">
+            <i class="fas fa-exclamation-triangle"></i>
+            <p id="error-message"></p>
+            <button onclick="getWeatherData()">Try Again</button>
+        </div>
+
+        <div class="weather-content" id="weather-content" style="display: none;">
+            <!-- Current Weather -->
+            <div class="current-weather">
+                <div class="location">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span id="location"></span>
+                </div>
+                
+                <div class="current-info">
+                    <div class="temperature">
+                        <span id="current-temp"></span>
+                        <div class="weather-icon">
+                            <img id="current-icon" src="" alt="Weather icon">
+                        </div>
+                    </div>
+                    <div class="weather-details">
+                        <h3 id="current-condition"></h3>
+                        <p id="feels-like"></p>
+                        <div class="additional-info">
+                            <div class="info-item">
+                                <i class="fas fa-eye"></i>
+                                <span>Visibility: <span id="visibility"></span></span>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-tint"></i>
+                                <span>Humidity: <span id="humidity"></span></span>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-wind"></i>
+                                <span>Wind: <span id="wind"></span></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3-Day Forecast -->
+            <div class="forecast">
+                <h2><i class="fas fa-calendar-alt"></i> 3-Day Forecast</h2>
+                <div class="forecast-container" id="forecast-container">
+                    <!-- Forecast items will be dynamically added here -->
+                </div>
+            </div>
+
+            <!-- Weather Alerts Section -->
+            <div class="weather-alerts" id="weather-alerts" style="display: none;">
+                <h2><i class="fas fa-exclamation-triangle"></i> Weather Alerts</h2>
+                <div class="alerts-container" id="alerts-container">
+                    <!-- Weather alerts will be dynamically added here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
