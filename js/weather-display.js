@@ -6,20 +6,23 @@ const WeatherDisplay = {
         // Store current data
         StateManager.setWeatherData(data);
         
+        // Use window.DOM if available (for testing), otherwise use the global DOM
+        const domRef = (typeof window !== 'undefined' && window.DOM) ? window.DOM : DOM;
+        
         // Current weather
         const current = data.current;
         const location = data.location;
         
-        DOMUtils.setText(DOM.location, `${location.name}, ${location.region}, ${location.country}`);
-        DOMUtils.setText(DOM.currentTemp, `${MathUtils.roundTemp(current.temp_c)}°C`);
+        DOMUtils.setText(domRef.location, `${location.name}, ${location.region}, ${location.country}`);
+        DOMUtils.setText(domRef.currentTemp, `${MathUtils.roundTemp(current.temp_c)}°C`);
         
-        if (DOM.currentIcon) {
-            DOM.currentIcon.src = `https:${current.condition.icon}`;
-            DOM.currentIcon.alt = current.condition.text;
+        if (domRef.currentIcon) {
+            domRef.currentIcon.src = `https:${current.condition.icon}`;
+            domRef.currentIcon.alt = current.condition.text;
         }
         
-        DOMUtils.setText(DOM.currentCondition, current.condition.text);
-        DOMUtils.setText(DOM.feelsLike, `Feels like ${MathUtils.roundTemp(current.feelslike_c)}°C`);
+        DOMUtils.setText(domRef.currentCondition, current.condition.text);
+        DOMUtils.setText(domRef.feelsLike, `Feels like ${MathUtils.roundTemp(current.feelslike_c)}°C`);
         
         // Apply weather animation based on condition
         WeatherAnimations.applyWeatherAnimation(current.condition.text, current);
@@ -29,23 +32,29 @@ const WeatherDisplay = {
         
         // Enhanced visibility display
         WeatherDisplay.updateVisibilityDisplay(current.vis_km, current.condition.text);
-        DOMUtils.setText(DOM.humidity, `${current.humidity}%`);
-        DOMUtils.setText(DOM.wind, `${current.wind_kph} km/h ${current.wind_dir}`);
+        DOMUtils.setText(domRef.humidity, `${current.humidity}%`);
+        DOMUtils.setText(domRef.wind, `${current.wind_kph} km/h ${current.wind_dir}`);
         
         // UV Index display and warning
         if (current.uv !== undefined) {
-            DOMUtils.setText(DOM.uvIndex, current.uv);
+            DOMUtils.setText(domRef.uvIndex, current.uv);
             
             // Show UV warning if UV index is higher than 3
             if (current.uv > 3) {
-                DOM.uvWarning.style.display = 'flex';
+                if (domRef.uvWarning && domRef.uvWarning.style) {
+                    domRef.uvWarning.style.display = 'flex';
+                }
                 console.log(`UV Index is ${current.uv} - showing sunscreen warning`);
             } else {
-                DOM.uvWarning.style.display = 'none';
+                if (domRef.uvWarning && domRef.uvWarning.style) {
+                    domRef.uvWarning.style.display = 'none';
+                }
             }
         } else {
-            DOMUtils.setText(DOM.uvIndex, 'N/A');
-            DOM.uvWarning.style.display = 'none';
+            DOMUtils.setText(domRef.uvIndex, 'N/A');
+            if (domRef.uvWarning && domRef.uvWarning.style) {
+                domRef.uvWarning.style.display = 'none';
+            }
         }
 
         // 3-day forecast
@@ -60,9 +69,12 @@ const WeatherDisplay = {
 
     // Display forecast data
     displayForecast: (forecastDays) => {
-        if (!DOM.forecastContainer) return;
+        // Use window.DOM if available (for testing), otherwise use the global DOM
+        const domRef = (typeof window !== 'undefined' && window.DOM) ? window.DOM : DOM;
+        
+        if (!domRef.forecastContainer) return;
 
-        DOMUtils.setHTML(DOM.forecastContainer, '');
+        DOMUtils.setHTML(domRef.forecastContainer, '');
         
         forecastDays.forEach((day, index) => {
             const forecastItem = document.createElement('div');
@@ -89,31 +101,39 @@ const WeatherDisplay = {
                 ${rainInfo}
             `;
             
-            DOM.forecastContainer.appendChild(forecastItem);
+            domRef.forecastContainer.appendChild(forecastItem);
         });
     },
 
     // Update current temperature display
     updateTemperature: (tempC) => {
-        DOMUtils.setText(DOM.currentTemp, `${MathUtils.roundTemp(tempC)}°C`);
+        // Use window.DOM if available (for testing), otherwise use the global DOM
+        const domRef = (typeof window !== 'undefined' && window.DOM) ? window.DOM : DOM;
+        DOMUtils.setText(domRef.currentTemp, `${MathUtils.roundTemp(tempC)}°C`);
     },
 
     // Update feels like temperature
     updateFeelsLike: (feelsLikeC) => {
-        DOMUtils.setText(DOM.feelsLike, `Feels like ${MathUtils.roundTemp(feelsLikeC)}°C`);
+        // Use window.DOM if available (for testing), otherwise use the global DOM
+        const domRef = (typeof window !== 'undefined' && window.DOM) ? window.DOM : DOM;
+        DOMUtils.setText(domRef.feelsLike, `Feels like ${MathUtils.roundTemp(feelsLikeC)}°C`);
     },
 
     // Update location display
     updateLocation: (locationData) => {
-        DOMUtils.setText(DOM.location, `${locationData.name}, ${locationData.region}, ${locationData.country}`);
+        // Use window.DOM if available (for testing), otherwise use the global DOM
+        const domRef = (typeof window !== 'undefined' && window.DOM) ? window.DOM : DOM;
+        DOMUtils.setText(domRef.location, `${locationData.name}, ${locationData.region}, ${locationData.country}`);
     },
 
     // Update weather condition
     updateCondition: (condition) => {
-        DOMUtils.setText(DOM.currentCondition, condition.text);
-        if (DOM.currentIcon) {
-            DOM.currentIcon.src = `https:${condition.icon}`;
-            DOM.currentIcon.alt = condition.text;
+        // Use window.DOM if available (for testing), otherwise use the global DOM
+        const domRef = (typeof window !== 'undefined' && window.DOM) ? window.DOM : DOM;
+        DOMUtils.setText(domRef.currentCondition, condition.text);
+        if (domRef.currentIcon) {
+            domRef.currentIcon.src = `https:${condition.icon}`;
+            domRef.currentIcon.alt = condition.text;
         }
     },
 
@@ -128,8 +148,11 @@ const WeatherDisplay = {
     updateVisibilityDisplay: (visibilityKm, weatherCondition) => {
         const analysis = VisibilityUtils.analyzeVisibility(visibilityKm, weatherCondition);
         
+        // Use window.DOM if available (for testing), otherwise use the global DOM
+        const domRef = (typeof window !== 'undefined' && window.DOM) ? window.DOM : DOM;
+        
         // Update basic visibility display
-        DOMUtils.setText(DOM.visibility, VisibilityUtils.formatVisibility(visibilityKm));
+        DOMUtils.setText(domRef.visibility, VisibilityUtils.formatVisibility(visibilityKm));
         
         // Update visibility icon
         const visibilityIcon = document.getElementById('visibility-icon');
@@ -267,12 +290,15 @@ const WeatherDisplay = {
 
     // Clear all weather data from display
     clearDisplay: () => {
-        DOMUtils.setText(DOM.location, '');
-        DOMUtils.setText(DOM.currentTemp, '');
-        DOMUtils.setText(DOM.currentCondition, '');
-        DOMUtils.setText(DOM.feelsLike, '');
-                 // Clear visibility display
-         DOMUtils.setText(DOM.visibility, '');
+        // Use window.DOM if available (for testing), otherwise use the global DOM
+        const domRef = (typeof window !== 'undefined' && window.DOM) ? window.DOM : DOM;
+        
+        DOMUtils.setText(domRef.location, '');
+        DOMUtils.setText(domRef.currentTemp, '');
+        DOMUtils.setText(domRef.currentCondition, '');
+        DOMUtils.setText(domRef.feelsLike, '');
+        // Clear visibility display
+        DOMUtils.setText(domRef.visibility, '');
          const categoryElement = document.getElementById('visibility-category');
          const descriptionElement = document.getElementById('visibility-description');
          const expandableContent = document.getElementById('visibility-expandable');
@@ -294,16 +320,16 @@ const WeatherDisplay = {
              );
          }
         
-        DOMUtils.setText(DOM.humidity, '');
-        DOMUtils.setText(DOM.wind, '');
+        DOMUtils.setText(domRef.humidity, '');
+        DOMUtils.setText(domRef.wind, '');
         
-        if (DOM.currentIcon) {
-            DOM.currentIcon.src = '';
-            DOM.currentIcon.alt = '';
+        if (domRef.currentIcon) {
+            domRef.currentIcon.src = '';
+            domRef.currentIcon.alt = '';
         }
         
-        if (DOM.forecastContainer) {
-            DOMUtils.setHTML(DOM.forecastContainer, '');
+        if (domRef.forecastContainer) {
+            DOMUtils.setHTML(domRef.forecastContainer, '');
         }
         
         // Reset to default gradient when clearing weather data

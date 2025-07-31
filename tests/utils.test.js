@@ -227,41 +227,58 @@ describe('DOM Utils', () => {
 });
 
 describe('UI Utils', () => {
-    let originalDOM;
+    let originalDOM, originalGlobalDOM;
 
     beforeEach(() => {
+        // Save both window.DOM and global DOM
         originalDOM = window.DOM;
-        window.DOM = TestData.createMockDOM();
+        originalGlobalDOM = window.DOM || global.DOM;
+        
+        // Create mock DOM and set it globally
+        const mockDOM = TestData.createMockDOM();
+        window.DOM = mockDOM;
+        
+        // Also set the global DOM variable that utilities use
+        if (typeof global !== 'undefined') {
+            global.DOM = mockDOM;
+        }
+        // Override the const DOM for the test environment
+        if (typeof window !== 'undefined' && window.DOM) {
+            window.DOM = mockDOM;
+        }
     });
 
     afterEach(() => {
         window.DOM = originalDOM;
+        if (typeof global !== 'undefined') {
+            global.DOM = originalGlobalDOM;
+        }
     });
 
     it('should show loading state', () => {
         UIUtils.showLoading();
-        expect(DOM.loading.style.display).toBe('flex');
-        expect(DOM.error.style.display).toBe('none');
-        expect(DOM.weatherContent.style.display).toBe('none');
+        expect(window.DOM.loading.style.display).toBe('flex');
+        expect(window.DOM.error.style.display).toBe('none');
+        expect(window.DOM.weatherContent.style.display).toBe('none');
     });
 
     it('should show error state', () => {
         UIUtils.showError('Test error message');
-        expect(DOM.errorMessage.textContent).toBe('Test error message');
-        expect(DOM.loading.style.display).toBe('none');
-        expect(DOM.error.style.display).toBe('flex');
-        expect(DOM.weatherContent.style.display).toBe('none');
+        expect(window.DOM.errorMessage.textContent).toBe('Test error message');
+        expect(window.DOM.loading.style.display).toBe('none');
+        expect(window.DOM.error.style.display).toBe('flex');
+        expect(window.DOM.weatherContent.style.display).toBe('none');
     });
 
     it('should show weather content', () => {
         UIUtils.showWeatherContent();
-        expect(DOM.loading.style.display).toBe('none');
-        expect(DOM.error.style.display).toBe('none');
-        expect(DOM.weatherContent.style.display).toBe('block');
+        expect(window.DOM.loading.style.display).toBe('none');
+        expect(window.DOM.error.style.display).toBe('none');
+        expect(window.DOM.weatherContent.style.display).toBe('block');
     });
 
     it('should show loading with custom message', () => {
         UIUtils.showLoadingWithMessage('Custom loading message');
-        expect(DOM.loading.style.display).toBe('flex');
+        expect(window.DOM.loading.style.display).toBe('flex');
     });
 });

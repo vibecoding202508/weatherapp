@@ -3,8 +3,14 @@
 const DarkMode = {
     // Initialize dark mode functionality
     initialize: () => {
-        if (!DOM.darkModeToggle || !DOM.toggleIcon) {
-            console.warn('Dark mode elements not found');
+        // Use window.DOM for tests, or global DOM for production
+        const domRef = (typeof window !== 'undefined' && window.DOM) ? window.DOM : DOM;
+        
+        if (!domRef.darkModeToggle || !domRef.toggleIcon) {
+            console.warn('Dark mode elements not found', { 
+                darkModeToggle: !!domRef.darkModeToggle, 
+                toggleIcon: !!domRef.toggleIcon 
+            });
             return;
         }
 
@@ -18,14 +24,16 @@ const DarkMode = {
         }
         
         // Add event listener for toggle
-        DOM.darkModeToggle.addEventListener('click', DarkMode.toggle);
+        domRef.darkModeToggle.addEventListener('click', DarkMode.toggle);
     },
 
     // Enable dark mode
     enable: () => {
+        const domRef = (typeof window !== 'undefined' && window.DOM) ? window.DOM : DOM;
+        
         DOMUtils.addClass(document.body, 'dark-mode');
-        if (DOM.toggleIcon) {
-            DOM.toggleIcon.className = 'fas fa-sun';
+        if (domRef.toggleIcon) {
+            domRef.toggleIcon.className = 'fas fa-sun';
         }
         localStorage.setItem('darkMode', 'true');
         
@@ -35,9 +43,11 @@ const DarkMode = {
 
     // Disable dark mode
     disable: () => {
+        const domRef = (typeof window !== 'undefined' && window.DOM) ? window.DOM : DOM;
+        
         DOMUtils.removeClass(document.body, 'dark-mode');
-        if (DOM.toggleIcon) {
-            DOM.toggleIcon.className = 'fas fa-moon';
+        if (domRef.toggleIcon) {
+            domRef.toggleIcon.className = 'fas fa-moon';
         }
         localStorage.setItem('darkMode', 'false');
         

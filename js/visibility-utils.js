@@ -172,7 +172,9 @@ const VisibilityUtils = {
         if (visibilityKm >= 10) {
             return `${Math.round(visibilityKm)} km`;
         } else if (visibilityKm >= 1) {
-            return `${visibilityKm.toFixed(1)} km`;
+            // Remove trailing zeros: 5.0 becomes 5, 5.5 stays 5.5
+            const formatted = parseFloat(visibilityKm.toFixed(1));
+            return `${formatted} km`;
         } else {
             return `${Math.round(visibilityKm * 1000)} m`;
         }
@@ -199,6 +201,11 @@ const VisibilityUtils = {
         return '#8e44ad';                              // Purple for extreme
     }
 };
+
+// Make VisibilityUtils globally available for browser scripts
+if (typeof window !== 'undefined') {
+    window.VisibilityUtils = VisibilityUtils;
+}
 
 // Export for use in other modules
 if (typeof module !== 'undefined' && module.exports) {

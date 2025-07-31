@@ -3,7 +3,9 @@
 const WeatherAPI = {
     // Check if API key is valid
     checkAPIKey: () => {
-        if (!ValidationUtils.isValidAPIKey(API_KEY)) {
+        // Check if window.API_KEY property exists (not just if it's truthy)
+        const apiKey = (typeof window !== 'undefined' && 'API_KEY' in window) ? window.API_KEY : API_KEY;
+        if (!ValidationUtils.isValidAPIKey(apiKey)) {
             UIUtils.showError('Please replace YOUR_API_KEY_HERE with your actual WeatherAPI.com API key in js/config.js. Get your free key at https://www.weatherapi.com/signup.aspx');
             return false;
         }

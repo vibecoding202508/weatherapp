@@ -176,43 +176,103 @@ const TestData = {
 
     // Mock DOM elements
     createMockDOM: () => {
+        // Helper function to create mock DOM elements with all necessary methods
+        const createMockElement = (customProps = {}) => {
+            const element = {
+                style: { display: 'none' },
+                _textContent: '',
+                innerHTML: '',
+                src: '',
+                alt: '',
+                className: '',
+                value: '',
+                classList: {
+                    classes: [],
+                    add: function(className) { this.classes.push(className); },
+                    remove: function(className) { 
+                        const index = this.classes.indexOf(className);
+                        if (index > -1) this.classes.splice(index, 1);
+                    },
+                    contains: function(className) { return this.classes.includes(className); },
+                    toggle: function(className) {
+                        if (this.contains(className)) {
+                            this.remove(className);
+                        } else {
+                            this.add(className);
+                        }
+                    }
+                },
+                cloneNode: function() { return createMockElement(customProps); },
+                replaceWith: function() {},
+                appendChild: function() {},
+                querySelector: function() { return createMockElement(); },
+                addEventListener: function() {},
+                ...customProps
+            };
+            
+            // Add textContent property with getter/setter that converts to string (like real DOM)
+            Object.defineProperty(element, 'textContent', {
+                get() { return this._textContent; },
+                set(value) { this._textContent = String(value); }
+            });
+            
+            return element;
+        };
+
         // Create mock DOM elements for testing
         const mockElements = {
-            loading: { style: { display: 'none' }, querySelector: () => ({ textContent: '' }) },
-            error: { style: { display: 'none' } },
-            errorMessage: { textContent: '' },
-            weatherContent: { style: { display: 'none' } },
-            location: { textContent: '' },
-            currentTemp: { textContent: '' },
-            currentIcon: { src: '', alt: '' },
-            currentCondition: { textContent: '' },
-            feelsLike: { textContent: '' },
-            visibility: { textContent: '' },
-            humidity: { textContent: '' },
-            wind: { textContent: '' },
-            uvIndex: { textContent: '' },
-            uvWarning: { style: { display: 'none' } },
-            forecastContainer: { innerHTML: '', appendChild: () => {} },
-            locationSearch: { value: '' },
-            searchBtn: {},
-            currentLocationBtn: {},
-            darkModeToggle: {},
-            toggleIcon: { className: '' }
+            loading: createMockElement({ querySelector: () => createMockElement() }),
+            error: createMockElement(),
+            errorMessage: createMockElement(),
+            weatherContent: createMockElement(),
+            location: createMockElement(),
+            currentTemp: createMockElement(),
+            currentIcon: createMockElement(),
+            currentCondition: createMockElement(),
+            feelsLike: createMockElement(),
+            visibility: createMockElement(),
+            humidity: createMockElement(),
+            wind: createMockElement(),
+            uvIndex: createMockElement(),
+            uvWarning: createMockElement(),
+            forecastContainer: createMockElement(),
+            locationSearch: createMockElement(),
+            searchBtn: createMockElement(),
+            currentLocationBtn: createMockElement(),
+            darkModeToggle: createMockElement(),
+            toggleIcon: createMockElement()
+        };
+
+        // Create consistent visibility elements that persist across calls
+        const persistentVisibilityElements = {
+            'visibility-icon': createMockElement(),
+            'visibility-container': createMockElement(),
+            'visibility-category': createMockElement(),
+            'visibility-description': createMockElement(),
+            'visibility-expandable': createMockElement(),
+            'visibility-toggle': createMockElement(),
+            'visibility-weather-context': createMockElement(),
+            'visibility-driving-advice': createMockElement(),
+            'visibility-activities-list': createMockElement()
         };
 
         // Mock document.getElementById
         document.getElementById = (id) => {
-            return mockElements[id.replace('-', '')] || { 
-                style: { display: 'none' }, 
-                textContent: '', 
-                innerHTML: '',
-                classList: {
-                    add: () => {},
-                    remove: () => {},
-                    contains: () => false,
-                    toggle: () => {}
-                }
-            };
+            // Handle special visibility elements
+            const visibilityElements = persistentVisibilityElements;
+            
+            if (visibilityElements[id]) {
+                return visibilityElements[id];
+            }
+            
+            // Return the same element for 'visibility' as mockElements.visibility
+            if (id === 'visibility') {
+                return mockElements.visibility;
+            }
+            
+            // Handle standard elements
+            const normalizedId = id.replace(/[-_]/g, '');
+            return mockElements[normalizedId] || createMockElement();
         };
 
         return mockElements;

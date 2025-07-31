@@ -29,30 +29,41 @@ const UIUtils = {
     },
 
     showLoadingWithMessage: (message) => {
-        const loadingText = DOM.loading.querySelector('p');
-        if (loadingText) {
-            loadingText.textContent = message;
+        // Use window.DOM if available (for testing), otherwise use the global DOM
+        const domRef = (typeof window !== 'undefined' && window.DOM) ? window.DOM : DOM;
+        
+        if (domRef.loading && domRef.loading.querySelector) {
+            const loadingText = domRef.loading.querySelector('p');
+            if (loadingText) {
+                loadingText.textContent = message;
+            }
         }
-        DOMUtils.showFlex(DOM.loading);
-        DOMUtils.hide(DOM.error);
-        DOMUtils.hide(DOM.weatherContent);
+        DOMUtils.showFlex(domRef.loading);
+        DOMUtils.hide(domRef.error);
+        DOMUtils.hide(domRef.weatherContent);
         StateManager.setLoading(true);
         StateManager.setError(false);
     },
 
     showError: (message) => {
-        DOMUtils.setText(DOM.errorMessage, message);
-        DOMUtils.hide(DOM.loading);
-        DOMUtils.showFlex(DOM.error);
-        DOMUtils.hide(DOM.weatherContent);
+        // Use window.DOM if available (for testing), otherwise use the global DOM
+        const domRef = (typeof window !== 'undefined' && window.DOM) ? window.DOM : DOM;
+        
+        DOMUtils.setText(domRef.errorMessage, message);
+        DOMUtils.hide(domRef.loading);
+        DOMUtils.showFlex(domRef.error);
+        DOMUtils.hide(domRef.weatherContent);
         StateManager.setLoading(false);
         StateManager.setError(true);
     },
 
     showWeatherContent: () => {
-        DOMUtils.hide(DOM.loading);
-        DOMUtils.hide(DOM.error);
-        DOMUtils.show(DOM.weatherContent);
+        // Use window.DOM if available (for testing), otherwise use the global DOM
+        const domRef = (typeof window !== 'undefined' && window.DOM) ? window.DOM : DOM;
+        
+        DOMUtils.hide(domRef.loading);
+        DOMUtils.hide(domRef.error);
+        DOMUtils.show(domRef.weatherContent);
         StateManager.setLoading(false);
         StateManager.setError(false);
     }
@@ -102,15 +113,33 @@ const StringUtils = {
 // Validation utility functions
 const ValidationUtils = {
     isValidAPIKey: (apiKey) => {
-        return apiKey && apiKey !== 'YOUR_API_KEY_HERE' && apiKey.length > 10;
+        // More explicit validation to ensure proper boolean return
+        if (!apiKey || typeof apiKey !== 'string') {
+            return false;
+        }
+        if (apiKey === 'YOUR_API_KEY_HERE') {
+            return false;
+        }
+        if (apiKey.length <= 10) {
+            return false;
+        }
+        return true;
     },
 
     isValidLocation: (location) => {
-        return location && location.trim().length > 0;
+        return !!(location && location.trim().length > 0);
     },
 
-    isValidCoordinates: (lat, lon) => {
-        return !isNaN(lat) && !isNaN(lon) && lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180;
+    isValidCoordinates: (latitude, longitude) => {
+        // Validate latitude: -90 to 90
+        if (typeof latitude !== 'number' || latitude < -90 || latitude > 90) {
+            return false;
+        }
+        // Validate longitude: -180 to 180
+        if (typeof longitude !== 'number' || longitude < -180 || longitude > 180) {
+            return false;
+        }
+        return true;
     }
 };
 
@@ -213,7 +242,7 @@ const VisibilityUtils = {
             if (visibility < 2) {
                 return 'Heavy rain is reducing visibility. Use windshield wipers and drive slowly.';
             } else if (visibility < 5) {
-                return 'Rain is affecting visibility. Use wipers and maintain safe distance.';
+                return 'rain is affecting visibility. Use wipers and maintain safe distance.';
             } else {
                 return 'Light rain with minimal impact on visibility.';
             }
@@ -250,6 +279,17 @@ const VisibilityUtils = {
         }
     }
 };
+
+// Make utility functions globally available for browser scripts
+if (typeof window !== 'undefined') {
+    window.UIUtils = UIUtils;
+    window.DateUtils = DateUtils;
+    window.MathUtils = MathUtils;
+    window.StringUtils = StringUtils;
+    window.ValidationUtils = ValidationUtils;
+    window.VisibilityUtils = VisibilityUtils;
+    window.decodeBase64UTF8 = decodeBase64UTF8;
+}
 
 // Export for use in other modules (if using modules)
 if (typeof module !== 'undefined' && module.exports) {

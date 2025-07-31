@@ -24,7 +24,18 @@ class TestFramework {
         const fullTestName = this.currentSuite ? `${this.currentSuite} > ${testName}` : testName;
         
         try {
+            // Run beforeEach function if it exists
+            if (this.beforeEachFn) {
+                this.beforeEachFn();
+            }
+            
             testFunction();
+            
+            // Run afterEach function if it exists
+            if (this.afterEachFn) {
+                this.afterEachFn();
+            }
+            
             this.results.passed++;
             console.log(`✅ ${testName}`);
         } catch (error) {
@@ -37,7 +48,7 @@ class TestFramework {
 
     // Assertion methods
     expect(actual) {
-        return {
+        const assertions = {
             toBe: (expected) => {
                 if (actual !== expected) {
                     throw new Error(`Expected ${actual} to be ${expected}`);
@@ -102,8 +113,115 @@ class TestFramework {
                 if (!(actual instanceof constructor)) {
                     throw new Error(`Expected ${actual} to be instance of ${constructor.name}`);
                 }
+            },
+            
+            toHaveBeenCalled: () => {
+                if (!actual._isMockFunction) {
+                    throw new Error(`Expected function to be a mock function`);
+                }
+                if (actual._calls.length === 0) {
+                    throw new Error(`Expected mock function to have been called, but it was not called`);
+                }
+            },
+            
+            toHaveBeenCalledTimes: (times) => {
+                if (!actual._isMockFunction) {
+                    throw new Error(`Expected function to be a mock function`);
+                }
+                if (actual._calls.length !== times) {
+                    throw new Error(`Expected mock function to have been called ${times} times, but it was called ${actual._calls.length} times`);
+                }
+            },
+            
+            toHaveBeenCalledWith: (...expectedArgs) => {
+                if (!actual._isMockFunction) {
+                    throw new Error(`Expected function to be a mock function`);
+                }
+                if (actual._calls.length === 0) {
+                    throw new Error(`Expected mock function to have been called with arguments, but it was not called`);
+                }
+                
+                // Check if any call matches the expected arguments
+                const callMatches = actual._calls.some(call => {
+                    if (call.length !== expectedArgs.length) return false;
+                    
+                    return call.every((arg, index) => {
+                        const expected = expectedArgs[index];
+                        // Handle expect.stringContaining
+                        if (expected && expected._isStringContaining) {
+                            return typeof arg === 'string' && arg.includes(expected._substring);
+                        }
+                        return JSON.stringify(arg) === JSON.stringify(expected);
+                    });
+                });
+                
+                if (!callMatches) {
+                    throw new Error(`Expected mock function to have been called with ${JSON.stringify(expectedArgs)}, but it was called with: ${JSON.stringify(actual._calls)}`);
+                }
             }
         };
+
+        // Add .not property for negated assertions
+        assertions.not = {
+            toBe: (expected) => {
+                if (actual === expected) {
+                    throw new Error(`Expected ${actual} not to be ${expected}`);
+                }
+            },
+            
+            toEqual: (expected) => {
+                if (JSON.stringify(actual) === JSON.stringify(expected)) {
+                    throw new Error(`Expected ${JSON.stringify(actual)} not to equal ${JSON.stringify(expected)}`);
+                }
+            },
+            
+            toContain: (expected) => {
+                if (actual.includes(expected)) {
+                    throw new Error(`Expected ${actual} not to contain ${expected}`);
+                }
+            },
+            
+            toBeTruthy: () => {
+                if (actual) {
+                    throw new Error(`Expected ${actual} not to be truthy`);
+                }
+            },
+            
+            toBeFalsy: () => {
+                if (!actual) {
+                    throw new Error(`Expected ${actual} not to be falsy`);
+                }
+            },
+            
+            toThrow: () => {
+                let threw = false;
+                try {
+                    actual();
+                } catch (error) {
+                    threw = true;
+                }
+                if (threw) {
+                    throw new Error('Expected function not to throw an error');
+                }
+            },
+            
+            toHaveProperty: (property) => {
+                if (property in actual) {
+                    throw new Error(`Expected object not to have property ${property}`);
+                }
+            },
+            
+            toHaveBeenCalled: () => {
+                if (!actual._isMockFunction) {
+                    throw new Error(`Expected function to be a mock function`);
+                }
+                if (actual._calls.length > 0) {
+                    throw new Error(`Expected mock function not to have been called, but it was called ${actual._calls.length} times`);
+                }
+            }
+        };
+
+        return assertions;
     }
 
     // Mock functions
@@ -186,6 +304,37 @@ window.it = testFramework.it.bind(testFramework);
 window.expect = testFramework.expect.bind(testFramework);
 window.beforeEach = testFramework.beforeEach.bind(testFramework);
 window.afterEach = testFramework.afterEach.bind(testFramework);
+
+// Add expect matchers
+window.expect.stringContaining = (substring) => {
+    return {
+        _isStringContaining: true,
+        _substring: substring,
+        toString: () => `StringContaining(${substring})`
+    };
+};
+
+// Simple mock function implementation
+window.jest = {
+    fn: (implementation) => {
+        const mockFn = implementation || (() => {});
+        const actualMockFn = (...args) => {
+            actualMockFn._calls.push(args);
+            return mockFn.apply(this, args);
+        };
+        actualMockFn._isMockFunction = true;
+        actualMockFn._calls = [];
+        actualMockFn.mockReturnValue = (value) => {
+            mockFn = () => value;
+            return actualMockFn;
+        };
+        actualMockFn.mockImplementation = (impl) => {
+            mockFn = impl;
+            return actualMockFn;
+        };
+        return actualMockFn;
+    }
+};
 
 // Export framework for advanced usage
 window.TestFramework = testFramework;

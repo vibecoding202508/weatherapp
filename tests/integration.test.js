@@ -18,42 +18,77 @@ describe('Weather App Integration', () => {
         window.API_KEY = 'test_api_key_12345678';
 
         // Setup successful API responses
-        window.fetch = jest.fn(() =>
+        const mockFetch = jest.fn(() =>
             Promise.resolve({
                 ok: true,
                 status: 200,
                 json: () => Promise.resolve(TestData.sampleWeatherData)
             })
         );
+        window.fetch = mockFetch;
+        window.mockFetch = mockFetch; // Store for assertions
 
         // Setup successful geolocation
+        const mockGetCurrentPosition = jest.fn((success) => {
+            success({
+                coords: {
+                    latitude: 51.5074,
+                    longitude: -0.1278
+                }
+            });
+        });
+        
         window.navigator = {
             geolocation: {
-                getCurrentPosition: jest.fn((success) => {
-                    success({
-                        coords: {
-                            latitude: 51.5074,
-                            longitude: -0.1278
-                        }
-                    });
-                })
+                getCurrentPosition: mockGetCurrentPosition
             }
         };
+        
+        // Store the mock for test assertions
+        window.mockGetCurrentPosition = mockGetCurrentPosition;
 
-        // Mock all required global objects
-        window.StateManager = {
+        // Mock UIUtils for error handling
+        window.mockUIUtils = {
+            showError: jest.fn(),
+            hideError: jest.fn(),
+            showLoading: jest.fn(),
+            hideLoading: jest.fn(),
+            showLoadingWithMessage: jest.fn()
+        };
+        
+        // Store original UIUtils and replace with mocks
+        if (typeof UIUtils !== 'undefined') {
+            window.originalUIUtils = UIUtils;
+            Object.keys(window.mockUIUtils).forEach(key => {
+                UIUtils[key] = window.mockUIUtils[key];
+            });
+        }
+
+        // Mock StateManager on both window and global scope
+        const mockStateManager = {
             weatherData: null,
             isLoading: false,
             hasError: false,
             currentLocation: false,
             
-            setWeatherData: function(data) { this.weatherData = data; },
+            setWeatherData: jest.fn(function(data) { this.weatherData = data; }),
             getWeatherData: function() { return this.weatherData; },
             setLoading: function(loading) { this.isLoading = loading; },
             setError: function(error) { this.hasError = error; },
             setCurrentLocation: function(current) { this.currentLocation = current; },
             getCurrentLocation: function() { return this.currentLocation; }
         };
+        
+        window.StateManager = mockStateManager;
+        // Also mock the global StateManager if it exists
+        if (typeof StateManager !== 'undefined') {
+            window.originalGlobalStateManager = {
+                setWeatherData: StateManager.setWeatherData,
+                getWeatherData: StateManager.getWeatherData
+            };
+            StateManager.setWeatherData = mockStateManager.setWeatherData;
+            StateManager.getWeatherData = mockStateManager.getWeatherData;
+        }
 
         window.WeatherDisplay = {
             displayWeatherData: jest.fn(),
@@ -80,6 +115,25 @@ describe('Weather App Integration', () => {
         window.fetch = originalFetch;
         window.navigator = originalNavigator;
         window.localStorage = originalLocalStorage;
+        
+        // Restore original UIUtils
+        if (window.originalUIUtils && typeof UIUtils !== 'undefined') {
+            Object.keys(window.originalUIUtils).forEach(key => {
+                UIUtils[key] = window.originalUIUtils[key];
+            });
+        }
+        
+        // Restore global StateManager if it was mocked
+        if (window.originalGlobalStateManager && typeof StateManager !== 'undefined') {
+            StateManager.setWeatherData = window.originalGlobalStateManager.setWeatherData;
+            StateManager.getWeatherData = window.originalGlobalStateManager.getWeatherData;
+            delete window.originalGlobalStateManager;
+        }
+        
+        // Clean up mock classes
+        if (window.mockClassListClasses) {
+            delete window.mockClassListClasses;
+        }
     });
 
     it('should complete full app initialization with current location', (done) => {
@@ -87,7 +141,7 @@ describe('Weather App Integration', () => {
         WeatherAPI.getWeatherData();
 
         setTimeout(() => {
-            expect(navigator.geolocation.getCurrentPosition).toHaveBeenCalled();
+            expect(window.mockGetCurrentPosition).toHaveBeenCalled();
             expect(window.fetch).toHaveBeenCalled();
             expect(StateManager.getWeatherData()).toEqual(TestData.sampleWeatherData);
             expect(WeatherDisplay.displayWeatherData).toHaveBeenCalledWith(TestData.sampleWeatherData);
@@ -98,7 +152,7 @@ describe('Weather App Integration', () => {
     it('should handle location search workflow', async () => {
         await WeatherAPI.getWeatherDataByLocation('London');
 
-        expect(window.fetch).toHaveBeenCalledWith(
+        expect(window.mockFetch).toHaveBeenCalledWith(
             expect.stringContaining('London')
         );
         expect(StateManager.getWeatherData()).toEqual(TestData.sampleWeatherData);
@@ -108,12 +162,19 @@ describe('Weather App Integration', () => {
     it('should handle poor visibility conditions end-to-end', () => {
         const poorVisibilityData = TestData.poorVisibilityWeatherData;
         
+        // Mock the updateVisibilityDisplay method
+        const originalUpdateVisibilityDisplay = WeatherDisplay.updateVisibilityDisplay;
+        WeatherDisplay.updateVisibilityDisplay = jest.fn();
+        
         WeatherDisplay.displayWeatherData(poorVisibilityData);
         
         expect(WeatherDisplay.updateVisibilityDisplay).toHaveBeenCalledWith(
             0.5, 
             'Fog'
         );
+        
+        // Restore the original method
+        WeatherDisplay.updateVisibilityDisplay = originalUpdateVisibilityDisplay;
     });
 
     it('should handle high UV conditions end-to-end', () => {
@@ -125,22 +186,33 @@ describe('Weather App Integration', () => {
     });
 
     it('should handle network errors gracefully', async () => {
-        window.fetch = jest.fn(() => Promise.reject(new Error('Network error')));
+        const mockFetch = jest.fn(() => Promise.reject(new Error('Network error')));
+        window.fetch = mockFetch;
+
+        // Suppress console.error for this test since we expect an error
+        const originalConsoleError = console.error;
+        console.error = jest.fn();
 
         await WeatherAPI.fetchWeatherData(51.5074, -0.1278);
 
-        // Should handle error gracefully without crashing
-        expect(true).toBe(true); // Test passes if no uncaught errors
+        // Restore console.error
+        console.error = originalConsoleError;
+
+        // Should handle error gracefully by calling showError
+        expect(window.mockUIUtils.showError).toHaveBeenCalledWith(
+            'Failed to fetch weather data. Please check your internet connection and try again.'
+        );
     });
 
     it('should handle API errors gracefully', async () => {
-        window.fetch = jest.fn(() =>
+        const mockFetch = jest.fn(() =>
             Promise.resolve({
                 ok: false,
                 status: 404,
                 statusText: 'Not Found'
             })
         );
+        window.fetch = mockFetch;
 
         await WeatherAPI.getWeatherDataByLocation('InvalidLocation');
 
@@ -193,29 +265,84 @@ describe('Dark Mode Integration', () => {
         window.DOM = TestData.createMockDOM();
         window.localStorage = TestData.createMockLocalStorage();
 
-        // Add body mock
-        document.body = {
-            classList: {
-                classes: [],
-                add: function(className) { this.classes.push(className); },
-                remove: function(className) { 
-                    const index = this.classes.indexOf(className);
-                    if (index > -1) this.classes.splice(index, 1);
-                },
-                contains: function(className) { return this.classes.includes(className); }
-            }
-        };
+        // Initialize mockClassListClasses for classList.contains compatibility
+        window.mockClassListClasses = [];
+        
+        // Mock document.body.classList methods
+        Object.defineProperty(document.body.classList, 'add', {
+            value: function(className) { window.mockClassListClasses.push(className); },
+            configurable: true
+        });
+        Object.defineProperty(document.body.classList, 'remove', {
+            value: function(className) { 
+                const index = window.mockClassListClasses.indexOf(className);
+                if (index > -1) window.mockClassListClasses.splice(index, 1);
+            },
+            configurable: true
+        });
+        Object.defineProperty(document.body.classList, 'contains', {
+            value: function(className) { return window.mockClassListClasses.includes(className); },
+            configurable: true
+        });
 
-        // Mock WeatherDisplay methods needed for dark mode
-        window.WeatherDisplay = {
+        // Mock StateManager on both window and global scope
+        const mockStateManager = {
+            weatherData: null,
+            isLoading: false,
+            hasError: false,
+            currentLocation: false,
+            
+            setWeatherData: jest.fn(function(data) { this.weatherData = data; }),
+            getWeatherData: function() { return this.weatherData; },
+            setLoading: function(loading) { this.isLoading = loading; },
+            setError: function(error) { this.hasError = error; },
+            setCurrentLocation: function(current) { this.currentLocation = current; },
+            getCurrentLocation: function() { return this.currentLocation; }
+        };
+        
+        window.StateManager = mockStateManager;
+        // Also mock the global StateManager if it exists
+        if (typeof StateManager !== 'undefined') {
+            window.originalGlobalStateManager = {
+                setWeatherData: StateManager.setWeatherData,
+                getWeatherData: StateManager.getWeatherData
+            };
+            StateManager.setWeatherData = mockStateManager.setWeatherData;
+            StateManager.getWeatherData = mockStateManager.getWeatherData;
+        }
+
+        // Mock WeatherDisplay on both window and global scope
+        const mockWeatherDisplay = {
+            displayWeatherData: jest.fn(),
+            clearDisplay: jest.fn(),
             resetToDefaultBackground: jest.fn(),
             applyWeatherBackground: jest.fn()
         };
+        
+        window.WeatherDisplay = mockWeatherDisplay;
+        // Also mock the global WeatherDisplay if it exists
+        if (typeof WeatherDisplay !== 'undefined') {
+            window.originalWeatherDisplay = {
+                displayWeatherData: WeatherDisplay.displayWeatherData,
+                clearDisplay: WeatherDisplay.clearDisplay,
+                resetToDefaultBackground: WeatherDisplay.resetToDefaultBackground,
+                applyWeatherBackground: WeatherDisplay.applyWeatherBackground
+            };
+            WeatherDisplay.displayWeatherData = mockWeatherDisplay.displayWeatherData;
+            WeatherDisplay.clearDisplay = mockWeatherDisplay.clearDisplay;
+            WeatherDisplay.resetToDefaultBackground = mockWeatherDisplay.resetToDefaultBackground;
+            WeatherDisplay.applyWeatherBackground = mockWeatherDisplay.applyWeatherBackground;
+        }
     });
 
     afterEach(() => {
         window.DOM = originalDOM;
         window.localStorage = originalLocalStorage;
+        
+        // Clean up mock classes
+        if (window.mockClassListClasses) {
+            delete window.mockClassListClasses;
+        }
     });
 
     it('should initialize dark mode from localStorage', () => {
@@ -224,10 +351,13 @@ describe('Dark Mode Integration', () => {
         DarkMode.initialize();
         
         expect(document.body.classList.contains('dark-mode')).toBe(true);
-        expect(DOM.toggleIcon.className).toBe('fas fa-sun');
+        expect(window.DOM.toggleIcon.className).toBe('fas fa-sun');
     });
 
     it('should toggle dark mode correctly', () => {
+        // Ensure localStorage starts clean (no dark mode preference)
+        localStorage.removeItem('darkMode');
+        
         DarkMode.initialize();
         
         expect(document.body.classList.contains('dark-mode')).toBe(false);
@@ -259,30 +389,96 @@ describe('Complete User Workflows', () => {
         window.localStorage = TestData.createMockLocalStorage();
         window.API_KEY = 'test_api_key_12345678';
         
-        // Mock successful responses
-        window.fetch = jest.fn(() =>
+        // Setup successful API responses
+        const mockFetch = jest.fn(() =>
             Promise.resolve({
                 ok: true,
                 status: 200,
                 json: () => Promise.resolve(TestData.sampleWeatherData)
             })
         );
+        window.fetch = mockFetch;
+        window.mockFetch = mockFetch; // Store for assertions
+        
+        // Initialize mockClassListClasses for classList.contains compatibility
+        window.mockClassListClasses = [];
+        
+        // Mock document.body.classList methods
+        Object.defineProperty(document.body.classList, 'add', {
+            value: function(className) { window.mockClassListClasses.push(className); },
+            configurable: true
+        });
+        Object.defineProperty(document.body.classList, 'remove', {
+            value: function(className) { 
+                const index = window.mockClassListClasses.indexOf(className);
+                if (index > -1) window.mockClassListClasses.splice(index, 1);
+            },
+            configurable: true
+        });
+        Object.defineProperty(document.body.classList, 'contains', {
+            value: function(className) { return window.mockClassListClasses.includes(className); },
+            configurable: true
+        });
+        
+        // Mock successful responses
+        const mockFetch = jest.fn(() =>
+            Promise.resolve({
+                ok: true,
+                status: 200,
+                json: () => Promise.resolve(TestData.sampleWeatherData)
+            })
+        );
+        window.fetch = mockFetch;
+        window.mockFetch = mockFetch; // Store for assertions
 
-        // Setup all required mocks
-        window.StateManager = {
+        // Mock StateManager on both window and global scope  
+        const mockStateManager = {
             weatherData: null,
-            setWeatherData: function(data) { this.weatherData = data; },
+            isLoading: false,
+            hasError: false,
+            currentLocation: false,
+            
+            setWeatherData: jest.fn(function(data) { this.weatherData = data; }),
             getWeatherData: function() { return this.weatherData; },
-            setLoading: () => {},
-            setError: () => {},
-            setCurrentLocation: () => {},
-            getCurrentLocation: () => false
+            setLoading: function(loading) { this.isLoading = loading; },
+            setError: function(error) { this.hasError = error; },
+            setCurrentLocation: function(current) { this.currentLocation = current; },
+            getCurrentLocation: function() { return this.currentLocation; }
         };
+        
+        window.StateManager = mockStateManager;
+        // Also mock the global StateManager if it exists
+        if (typeof StateManager !== 'undefined') {
+            window.originalGlobalStateManager = {
+                setWeatherData: StateManager.setWeatherData,
+                getWeatherData: StateManager.getWeatherData
+            };
+            StateManager.setWeatherData = mockStateManager.setWeatherData;
+            StateManager.getWeatherData = mockStateManager.getWeatherData;
+        }
 
-        window.WeatherDisplay = {
+        // Mock WeatherDisplay on both window and global scope
+        const mockWeatherDisplay = {
             displayWeatherData: jest.fn(),
-            clearDisplay: jest.fn()
+            clearDisplay: jest.fn(),
+            resetToDefaultBackground: jest.fn(),
+            applyWeatherBackground: jest.fn()
         };
+        
+        window.WeatherDisplay = mockWeatherDisplay;
+        // Also mock the global WeatherDisplay if it exists
+        if (typeof WeatherDisplay !== 'undefined') {
+            window.originalWeatherDisplay = {
+                displayWeatherData: WeatherDisplay.displayWeatherData,
+                clearDisplay: WeatherDisplay.clearDisplay,
+                resetToDefaultBackground: WeatherDisplay.resetToDefaultBackground,
+                applyWeatherBackground: WeatherDisplay.applyWeatherBackground
+            };
+            WeatherDisplay.displayWeatherData = mockWeatherDisplay.displayWeatherData;
+            WeatherDisplay.clearDisplay = mockWeatherDisplay.clearDisplay;
+            WeatherDisplay.resetToDefaultBackground = mockWeatherDisplay.resetToDefaultBackground;
+            WeatherDisplay.applyWeatherBackground = mockWeatherDisplay.applyWeatherBackground;
+        }
 
         window.UIUtils = {
             showLoading: jest.fn(),
@@ -291,15 +487,39 @@ describe('Complete User Workflows', () => {
             showLoadingWithMessage: jest.fn()
         };
     });
+    
+    afterEach(() => {
+        // Clean up mock classes
+        if (window.mockClassListClasses) {
+            delete window.mockClassListClasses;
+        }
+        
+        // Restore global StateManager if it was mocked
+        if (window.originalGlobalStateManager && typeof StateManager !== 'undefined') {
+            StateManager.setWeatherData = window.originalGlobalStateManager.setWeatherData;
+            StateManager.getWeatherData = window.originalGlobalStateManager.getWeatherData;
+            delete window.originalGlobalStateManager;
+        }
+        
+        // Restore original WeatherDisplay if it was mocked
+        if (window.originalWeatherDisplay) {
+            if (typeof WeatherDisplay !== 'undefined') {
+                Object.keys(window.originalWeatherDisplay).forEach(key => {
+                    WeatherDisplay[key] = window.originalWeatherDisplay[key];
+                });
+            }
+            delete window.originalWeatherDisplay;
+        }
+    });
 
     it('should handle complete search workflow', async () => {
         // Simulate user typing in search
-        DOM.locationSearch.value = 'Paris';
+        window.DOM.locationSearch.value = 'Paris';
         
         // Simulate search
         await WeatherAPI.getWeatherDataByLocation('Paris');
         
-        expect(window.fetch).toHaveBeenCalledWith(
+        expect(window.mockFetch).toHaveBeenCalledWith(
             expect.stringContaining('Paris')
         );
         expect(WeatherDisplay.displayWeatherData).toHaveBeenCalled();
@@ -313,12 +533,18 @@ describe('Complete User Workflows', () => {
         WeatherDisplay.clearDisplay();
         await WeatherAPI.getWeatherData();
         
-        expect(WeatherDisplay.clearDisplay).toHaveBeenCalled();
+        expect(window.WeatherDisplay.clearDisplay).toHaveBeenCalled();
     });
 
     it('should handle visibility toggle workflow', () => {
         // Mock DOM elements for visibility
-        const mockExpandable = { style: { display: 'none' } };
+        const mockExpandable = { 
+            style: { display: 'none' },
+            classList: { 
+                add: jest.fn(), 
+                remove: jest.fn() 
+            }
+        };
         const mockToggle = { 
             classList: { 
                 contains: () => false, 
@@ -336,6 +562,7 @@ describe('Complete User Workflows', () => {
         WeatherDisplay.toggleVisibilityDetails();
         
         expect(mockExpandable.style.display).toBe('block');
+        expect(mockExpandable.classList.add).toHaveBeenCalledWith('expanded');
         expect(mockToggle.classList.add).toHaveBeenCalledWith('expanded');
     });
 });
