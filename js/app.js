@@ -143,8 +143,11 @@ window.addEventListener('unhandledrejection', (event) => {
     App.handleError(event.reason, 'Unhandled Promise Rejection');
 });
 
-// Initialize the app
-App.initialize();
+// Initialize the app only if we're on the main weather app page
+// Check for key DOM elements to determine if this is the weather app page
+if (document.getElementById('weather-content') || document.querySelector('.container')) {
+    App.initialize();
+}
 
 // Expose App object globally for debugging
 window.WeatherApp = App;

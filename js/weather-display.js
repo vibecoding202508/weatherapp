@@ -38,14 +38,14 @@ const WeatherDisplay = {
             
             // Show UV warning if UV index is higher than 3
             if (current.uv > 3) {
-                DOM.uvWarning.style.display = 'flex';
+                DOMUtils.showFlex(DOM.uvWarning);
                 console.log(`UV Index is ${current.uv} - showing sunscreen warning`);
             } else {
-                DOM.uvWarning.style.display = 'none';
+                DOMUtils.hide(DOM.uvWarning);
             }
         } else {
             DOMUtils.setText(DOM.uvIndex, 'N/A');
-            DOM.uvWarning.style.display = 'none';
+            DOMUtils.hide(DOM.uvWarning);
         }
 
         // 3-day forecast
@@ -182,9 +182,9 @@ const WeatherDisplay = {
         const contextElement = document.getElementById('visibility-weather-context');
         if (contextElement && analysis.weatherContext) {
             contextElement.textContent = analysis.weatherContext;
-            contextElement.style.display = 'block';
+            DOMUtils.show(contextElement);
         } else if (contextElement) {
-            contextElement.style.display = 'none';
+            DOMUtils.hide(contextElement);
         }
         
         // Update driving advice
@@ -213,7 +213,7 @@ const WeatherDisplay = {
          
          if (toggleButton && expandableContent) {
              // Set initial state - collapsed by default
-             expandableContent.style.display = 'none';
+             DOMUtils.hide(expandableContent);
              toggleButton.classList.remove('expanded');
              
              // Remove existing click handlers to prevent duplicates
@@ -236,7 +236,7 @@ const WeatherDisplay = {
                          clickHandler(e);
                      }
                  });
-                 visibilityHeader.style.cursor = 'pointer';
+                 if (visibilityHeader) visibilityHeader.style.cursor = 'pointer';
              }
          }
      },
@@ -251,13 +251,13 @@ const WeatherDisplay = {
              
              if (isExpanded) {
                  // Collapse with animation
-                 expandableContent.style.display = 'none';
+                 DOMUtils.hide(expandableContent);
                  expandableContent.classList.remove('expanded');
                  toggleButton.classList.remove('expanded');
                  console.log('Visibility details collapsed');
              } else {
                  // Expand with animation
-                 expandableContent.style.display = 'block';
+                 DOMUtils.show(expandableContent);
                  expandableContent.classList.add('expanded');
                  toggleButton.classList.add('expanded');
                  console.log('Visibility details expanded');
@@ -282,7 +282,7 @@ const WeatherDisplay = {
          if (categoryElement) categoryElement.textContent = '';
          if (descriptionElement) descriptionElement.textContent = '';
          if (expandableContent) {
-             expandableContent.style.display = 'none';
+             DOMUtils.hide(expandableContent);
              expandableContent.classList.remove('expanded');
          }
          if (toggleButton) toggleButton.classList.remove('expanded');

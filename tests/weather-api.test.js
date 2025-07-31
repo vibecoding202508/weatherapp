@@ -1,295 +1,418 @@
-// Tests for Weather API Functionality
+// Weather API Tests
 
-describe('Weather API', () => {
-    let originalFetch;
-    let originalNavigator;
-    let originalDOM;
-    let mockDOM;
+describe('WeatherAPI', () => {
+    let mockElements, mockGeolocation, mockFetch;
 
     beforeEach(() => {
-        // Mock fetch
-        originalFetch = window.fetch;
-        
-        // Mock navigator.geolocation
-        originalNavigator = window.navigator;
-        
-        // Mock DOM
-        originalDOM = window.DOM;
-        mockDOM = TestData.createMockDOM();
-        window.DOM = mockDOM;
-
-        // Mock API_KEY
-        window.API_KEY = 'test_api_key_12345678';
+        mockElements = TestUtils.setupDOMMocks();
+        mockGeolocation = TestUtils.setupGeolocationMocks();
+        StateManager.reset();
+        TestUtils.resetMocks();
     });
 
     afterEach(() => {
-        window.fetch = originalFetch;
-        window.navigator = originalNavigator;
-        window.DOM = originalDOM;
+        TestUtils.resetMocks();
+        // Restore fetch if it was mocked
+        if (global.fetch && global.fetch.mockClear) {
+            delete global.fetch;
+        }
     });
 
-    it('should validate API key correctly', () => {
-        window.API_KEY = 'valid_api_key_123';
-        expect(WeatherAPI.checkAPIKey()).toBe(true);
-
-        window.API_KEY = 'YOUR_API_KEY_HERE';
-        expect(WeatherAPI.checkAPIKey()).toBe(false);
-
-        window.API_KEY = 'short';
-        expect(WeatherAPI.checkAPIKey()).toBe(false);
-
-        window.API_KEY = '';
-        expect(WeatherAPI.checkAPIKey()).toBe(false);
-    });
-
-    it('should handle successful weather data fetch', async () => {
-        window.fetch = jest.fn(() =>
-            Promise.resolve({
-                ok: true,
-                status: 200,
-                json: () => Promise.resolve(TestData.sampleWeatherData)
-            })
-        );
-
-        await WeatherAPI.fetchWeatherData(51.5074, -0.1278);
-
-        expect(window.fetch).toHaveBeenCalledWith(
-            expect.stringContaining('51.5074,-0.1278')
-        );
-    });
-
-    it('should handle API error responses', async () => {
-        window.fetch = jest.fn(() =>
-            Promise.resolve({
-                ok: false,
-                status: 400,
-                statusText: 'Bad Request'
-            })
-        );
-
-        await WeatherAPI.fetchWeatherData(51.5074, -0.1278);
-
-        expect(window.fetch).toHaveBeenCalled();
-        // Error should be displayed
-    });
-
-    it('should handle network errors', async () => {
-        window.fetch = jest.fn(() =>
-            Promise.reject(new Error('Network error'))
-        );
-
-        await WeatherAPI.fetchWeatherData(51.5074, -0.1278);
-
-        expect(window.fetch).toHaveBeenCalled();
-        // Error should be displayed
-    });
-
-    it('should validate coordinates before API call', async () => {
-        window.fetch = jest.fn();
-
-        await WeatherAPI.fetchWeatherData(91, 0); // Invalid latitude
-        expect(window.fetch).not.toHaveBeenCalled();
-
-        await WeatherAPI.fetchWeatherData(0, 181); // Invalid longitude
-        expect(window.fetch).not.toHaveBeenCalled();
-    });
-
-    it('should handle location search successfully', async () => {
-        window.fetch = jest.fn(() =>
-            Promise.resolve({
-                ok: true,
-                status: 200,
-                json: () => Promise.resolve(TestData.sampleWeatherData)
-            })
-        );
-
-        await WeatherAPI.getWeatherDataByLocation('London');
-
-        expect(window.fetch).toHaveBeenCalledWith(
-            expect.stringContaining('London')
-        );
-    });
-
-    it('should handle location not found error', async () => {
-        window.fetch = jest.fn(() =>
-            Promise.resolve({
-                ok: false,
-                status: 400,
-                statusText: 'Bad Request'
-            })
-        );
-
-        await WeatherAPI.getWeatherDataByLocation('InvalidLocation123');
-
-        expect(window.fetch).toHaveBeenCalled();
-    });
-
-    it('should handle geolocation success', (done) => {
-        const mockGeolocation = {
-            getCurrentPosition: jest.fn((success) => {
-                success({
-                    coords: {
-                        latitude: 51.5074,
-                        longitude: -0.1278
-                    }
-                });
-            })
-        };
-
-        window.navigator = { geolocation: mockGeolocation };
-        window.fetch = jest.fn(() =>
-            Promise.resolve({
-                ok: true,
-                status: 200,
-                json: () => Promise.resolve(TestData.sampleWeatherData)
-            })
-        );
-
-        WeatherAPI.getWeatherData();
-
-        setTimeout(() => {
-            expect(mockGeolocation.getCurrentPosition).toHaveBeenCalled();
-            done();
-        }, 100);
-    });
-
-    it('should handle geolocation errors', (done) => {
-        const mockGeolocation = {
-            getCurrentPosition: jest.fn((success, error) => {
-                error({
-                    code: 1,
-                    message: 'Permission denied'
-                });
-            })
-        };
-
-        window.navigator = { geolocation: mockGeolocation };
-
-        WeatherAPI.getWeatherData();
-
-        setTimeout(() => {
-            expect(mockGeolocation.getCurrentPosition).toHaveBeenCalled();
-            done();
-        }, 100);
-    });
-
-    it('should handle missing geolocation support', () => {
-        window.navigator = {};
-
-        WeatherAPI.getWeatherData();
-
-        // Should show error about geolocation not being supported
-    });
-
-    it('should refresh weather data correctly', () => {
-        const originalGetWeatherData = WeatherAPI.getWeatherData;
-        const originalGetWeatherDataByLocation = WeatherAPI.getWeatherDataByLocation;
-        
-        WeatherAPI.getWeatherData = jest.fn();
-        WeatherAPI.getWeatherDataByLocation = jest.fn();
-
-        // Mock StateManager
-        window.StateManager = {
-            getCurrentLocation: () => true,
-            getWeatherData: () => null
-        };
-
-        WeatherAPI.refreshWeatherData();
-        expect(WeatherAPI.getWeatherData).toHaveBeenCalled();
-
-        // Test refresh with cached location data
-        window.StateManager.getCurrentLocation = () => false;
-        window.StateManager.getWeatherData = () => ({
-            location: { name: 'London', country: 'UK' }
+    describe('checkAPIKey', () => {
+        it('should return false and show error for invalid API key', () => {
+            // Mock invalid API key
+            const originalAPIKey = window.API_KEY;
+            window.API_KEY = 'YOUR_API_KEY_HERE';
+            
+            const result = WeatherAPI.checkAPIKey();
+            
+            expect(result).toBe(false);
+            expect(mockElements.error.style.display).toBe('flex');
+            
+            // Restore original API key
+            window.API_KEY = originalAPIKey;
         });
 
-        WeatherAPI.refreshWeatherData();
-        expect(WeatherAPI.getWeatherDataByLocation).toHaveBeenCalledWith('London, UK');
+        it('should return true for valid API key', () => {
+            // Mock valid API key
+            const originalAPIKey = window.API_KEY;
+            window.API_KEY = 'valid-api-key-123456';
+            
+            const result = WeatherAPI.checkAPIKey();
+            
+            expect(result).toBe(true);
+            
+            // Restore original API key
+            window.API_KEY = originalAPIKey;
+        });
+    });
 
-        // Restore original functions
-        WeatherAPI.getWeatherData = originalGetWeatherData;
-        WeatherAPI.getWeatherDataByLocation = originalGetWeatherDataByLocation;
+    describe('getWeatherData', () => {
+        it('should show error if API key is invalid', () => {
+            const originalAPIKey = window.API_KEY;
+            window.API_KEY = 'invalid';
+            
+            WeatherAPI.getWeatherData();
+            
+            expect(mockElements.error.style.display).toBe('flex');
+            
+            window.API_KEY = originalAPIKey;
+        });
+
+        it('should show error if geolocation is not supported', () => {
+            const originalAPIKey = window.API_KEY;
+            window.API_KEY = 'valid-api-key-123456';
+            
+            // Mock no geolocation support
+            delete navigator.geolocation;
+            
+            WeatherAPI.getWeatherData();
+            
+            expect(mockElements.error.style.display).toBe('flex');
+            expect(mockElements.errorMessage.textContent).toContain('Geolocation is not supported');
+            
+            window.API_KEY = originalAPIKey;
+            TestUtils.setupGeolocationMocks(); // Restore geolocation
+        });
+
+        it('should call getCurrentPosition when geolocation is available', () => {
+            const originalAPIKey = window.API_KEY;
+            window.API_KEY = 'valid-api-key-123456';
+            
+            WeatherAPI.getWeatherData();
+            
+            expect(mockGeolocation.getCurrentPosition).toHaveBeenCalled();
+            expect(mockElements.loading.style.display).toBe('flex');
+            
+            window.API_KEY = originalAPIKey;
+        });
+
+        it('should handle geolocation permission denied', () => {
+            const originalAPIKey = window.API_KEY;
+            window.API_KEY = 'valid-api-key-123456';
+            
+            // Mock geolocation error
+            mockGeolocation.getCurrentPosition.mockImplementation((success, error) => {
+                error({
+                    code: 1, // PERMISSION_DENIED
+                    PERMISSION_DENIED: 1,
+                    POSITION_UNAVAILABLE: 2,
+                    TIMEOUT: 3
+                });
+            });
+            
+            WeatherAPI.getWeatherData();
+            
+            expect(mockElements.error.style.display).toBe('flex');
+            expect(mockElements.errorMessage.textContent).toContain('allow location access');
+            
+            window.API_KEY = originalAPIKey;
+        });
+
+        it('should handle geolocation timeout', () => {
+            const originalAPIKey = window.API_KEY;
+            window.API_KEY = 'valid-api-key-123456';
+            
+            mockGeolocation.getCurrentPosition.mockImplementation((success, error) => {
+                error({
+                    code: 3, // TIMEOUT
+                    PERMISSION_DENIED: 1,
+                    POSITION_UNAVAILABLE: 2,
+                    TIMEOUT: 3
+                });
+            });
+            
+            WeatherAPI.getWeatherData();
+            
+            expect(mockElements.errorMessage.textContent).toContain('timed out');
+            
+            window.API_KEY = originalAPIKey;
+        });
+    });
+
+    describe('getWeatherDataByLocation', () => {
+        it('should show error for invalid API key', async () => {
+            const originalAPIKey = window.API_KEY;
+            window.API_KEY = 'invalid';
+            
+            await WeatherAPI.getWeatherDataByLocation('London');
+            
+            expect(mockElements.error.style.display).toBe('flex');
+            
+            window.API_KEY = originalAPIKey;
+        });
+
+        it('should fetch weather data for valid location', async () => {
+            const originalAPIKey = window.API_KEY;
+            window.API_KEY = 'valid-api-key-123456';
+            
+            // Mock successful fetch
+            mockFetch = MockAPI.mockFetchSuccess(TestData.mockWeatherData);
+            
+            await WeatherAPI.getWeatherDataByLocation('London');
+            
+            expect(mockFetch).toHaveBeenCalled();
+            expect(mockElements.loading.style.display).toBe('flex');
+            
+            window.API_KEY = originalAPIKey;
+        });
+
+        it('should handle location not found error', async () => {
+            const originalAPIKey = window.API_KEY;
+            window.API_KEY = 'valid-api-key-123456';
+            
+            // Mock 400 error response
+            mockFetch = MockAPI.mockFetchError(400, 'Bad Request');
+            
+            await WeatherAPI.getWeatherDataByLocation('InvalidLocation');
+            
+            expect(mockElements.error.style.display).toBe('flex');
+            expect(mockElements.errorMessage.textContent).toContain('not found');
+            
+            window.API_KEY = originalAPIKey;
+        });
+
+        it('should handle API server error', async () => {
+            const originalAPIKey = window.API_KEY;
+            window.API_KEY = 'valid-api-key-123456';
+            
+            // Mock 500 error response
+            mockFetch = MockAPI.mockFetchError(500, 'Internal Server Error');
+            
+            await WeatherAPI.getWeatherDataByLocation('London');
+            
+            expect(mockElements.error.style.display).toBe('flex');
+            expect(mockElements.errorMessage.textContent).toContain('Weather API Error');
+            
+            window.API_KEY = originalAPIKey;
+        });
+
+        it('should handle network error', async () => {
+            const originalAPIKey = window.API_KEY;
+            window.API_KEY = 'valid-api-key-123456';
+            
+            // Mock network error
+            mockFetch = MockAPI.mockFetchNetworkError();
+            
+            await WeatherAPI.getWeatherDataByLocation('London');
+            
+            expect(mockElements.error.style.display).toBe('flex');
+            
+            window.API_KEY = originalAPIKey;
+        });
+    });
+
+    describe('fetchWeatherData', () => {
+        it('should validate coordinates before making request', async () => {
+            const originalAPIKey = window.API_KEY;
+            window.API_KEY = 'valid-api-key-123456';
+            
+            // Test invalid coordinates
+            await WeatherAPI.fetchWeatherData(91, 181); // Invalid lat/lon
+            
+            expect(mockElements.error.style.display).toBe('flex');
+            expect(mockElements.errorMessage.textContent).toContain('Failed to fetch weather data');
+            
+            window.API_KEY = originalAPIKey;
+        });
+
+        it('should make API request with valid coordinates', async () => {
+            const originalAPIKey = window.API_KEY;
+            window.API_KEY = 'valid-api-key-123456';
+            
+            mockFetch = MockAPI.mockFetchSuccess(TestData.mockWeatherData);
+            
+            await WeatherAPI.fetchWeatherData(51.5074, -0.1278); // London coordinates
+            
+            expect(mockFetch).toHaveBeenCalled();
+            
+            // Check that the correct URL was called
+            const fetchCall = mockFetch.calls[0];
+            const url = fetchCall.args[0];
+            expect(url).toContain('51.5074,-0.1278');
+            expect(url).toContain('forecast.json');
+            expect(url).toContain('days=3');
+            
+            window.API_KEY = originalAPIKey;
+        });
+
+        it('should handle successful weather data response', async () => {
+            const originalAPIKey = window.API_KEY;
+            window.API_KEY = 'valid-api-key-123456';
+            
+            mockFetch = MockAPI.mockFetchSuccess(TestData.mockWeatherData);
+            
+            // Mock WeatherDisplay.displayWeatherData
+            const originalDisplayWeatherData = WeatherDisplay.displayWeatherData;
+            WeatherDisplay.displayWeatherData = TestRunner.fn();
+            
+            await WeatherAPI.fetchWeatherData(51.5074, -0.1278);
+            
+            expect(WeatherDisplay.displayWeatherData).toHaveBeenCalledWith(TestData.mockWeatherData);
+            expect(StateManager.getWeatherData()).toEqual(TestData.mockWeatherData);
+            
+            // Restore original function
+            WeatherDisplay.displayWeatherData = originalDisplayWeatherData;
+            window.API_KEY = originalAPIKey;
+        });
+    });
+
+    describe('refreshWeatherData', () => {
+        it('should not refresh with invalid API key', () => {
+            const originalAPIKey = window.API_KEY;
+            window.API_KEY = 'invalid';
+            
+            // Mock getWeatherData to track calls
+            const originalGetWeatherData = WeatherAPI.getWeatherData;
+            WeatherAPI.getWeatherData = TestRunner.fn();
+            
+            WeatherAPI.refreshWeatherData();
+            
+            expect(WeatherAPI.getWeatherData).not.toHaveBeenCalled();
+            
+            // Restore
+            WeatherAPI.getWeatherData = originalGetWeatherData;
+            window.API_KEY = originalAPIKey;
+        });
+
+        it('should refresh current location data when using current location', () => {
+            const originalAPIKey = window.API_KEY;
+            window.API_KEY = 'valid-api-key-123456';
+            
+            StateManager.setCurrentLocation(true);
+            
+            const originalGetWeatherData = WeatherAPI.getWeatherData;
+            WeatherAPI.getWeatherData = TestRunner.fn();
+            
+            WeatherAPI.refreshWeatherData();
+            
+            expect(WeatherAPI.getWeatherData).toHaveBeenCalled();
+            
+            WeatherAPI.getWeatherData = originalGetWeatherData;
+            window.API_KEY = originalAPIKey;
+        });
+
+        it('should refresh searched location data when not using current location', () => {
+            const originalAPIKey = window.API_KEY;
+            window.API_KEY = 'valid-api-key-123456';
+            
+            StateManager.setCurrentLocation(false);
+            StateManager.setWeatherData(TestData.mockWeatherData);
+            
+            const originalGetWeatherDataByLocation = WeatherAPI.getWeatherDataByLocation;
+            WeatherAPI.getWeatherDataByLocation = TestRunner.fn();
+            
+            WeatherAPI.refreshWeatherData();
+            
+            expect(WeatherAPI.getWeatherDataByLocation).toHaveBeenCalledWith(
+                `${TestData.mockWeatherData.location.name}, ${TestData.mockWeatherData.location.country}`
+            );
+            
+            WeatherAPI.getWeatherDataByLocation = originalGetWeatherDataByLocation;
+            window.API_KEY = originalAPIKey;
+        });
+
+        it('should handle missing weather data gracefully', () => {
+            const originalAPIKey = window.API_KEY;
+            window.API_KEY = 'valid-api-key-123456';
+            
+            StateManager.setCurrentLocation(false);
+            StateManager.setWeatherData(null);
+            
+            expect(() => {
+                WeatherAPI.refreshWeatherData();
+            }).not.toThrow();
+            
+            window.API_KEY = originalAPIKey;
+        });
     });
 });
 
-describe('Weather API Integration', () => {
-    let originalFetch;
-    let originalDOM;
+// Integration tests for WeatherAPI with other modules
+describe('WeatherAPI Integration', () => {
+    let mockElements, mockGeolocation;
 
     beforeEach(() => {
-        originalFetch = window.fetch;
-        originalDOM = window.DOM;
-        window.DOM = TestData.createMockDOM();
-        window.API_KEY = 'test_api_key_12345678';
-        
-        // Mock WeatherDisplay and StateManager
-        window.WeatherDisplay = {
-            displayWeatherData: jest.fn()
-        };
-        window.StateManager = {
-            setWeatherData: jest.fn(),
-            getCurrentLocation: () => false,
-            getWeatherData: () => null
-        };
+        mockElements = TestUtils.setupDOMMocks();
+        mockGeolocation = TestUtils.setupGeolocationMocks();
+        StateManager.reset();
+        TestUtils.resetMocks();
     });
 
     afterEach(() => {
-        window.fetch = originalFetch;
-        window.DOM = originalDOM;
+        TestUtils.resetMocks();
     });
 
-    it('should complete full weather data flow', async () => {
-        window.fetch = jest.fn(() =>
-            Promise.resolve({
-                ok: true,
-                status: 200,
-                json: () => Promise.resolve(TestData.sampleWeatherData)
-            })
-        );
-
-        await WeatherAPI.fetchWeatherData(51.5074, -0.1278);
-
-        expect(window.fetch).toHaveBeenCalled();
-        expect(StateManager.setWeatherData).toHaveBeenCalledWith(TestData.sampleWeatherData);
-        expect(WeatherDisplay.displayWeatherData).toHaveBeenCalledWith(TestData.sampleWeatherData);
+    it('should complete full weather data flow from geolocation to display', async () => {
+        const originalAPIKey = window.API_KEY;
+        window.API_KEY = 'valid-api-key-123456';
+        
+        // Mock successful geolocation
+        mockGeolocation.getCurrentPosition.mockImplementation((success) => {
+            success(TestData.mockPosition);
+        });
+        
+        // Mock successful API response
+        const mockFetch = MockAPI.mockFetchSuccess(TestData.mockWeatherData);
+        
+        // Mock WeatherDisplay.displayWeatherData
+        const originalDisplayWeatherData = WeatherDisplay.displayWeatherData;
+        WeatherDisplay.displayWeatherData = TestRunner.fn();
+        
+        // Start the weather data flow
+        WeatherAPI.getWeatherData();
+        
+        // Allow geolocation callback to execute
+        await TestUtils.wait(10);
+        
+        expect(mockGeolocation.getCurrentPosition).toHaveBeenCalled();
+        expect(mockFetch).toHaveBeenCalled();
+        expect(StateManager.getWeatherData()).toEqual(TestData.mockWeatherData);
+        
+        // Restore
+        WeatherDisplay.displayWeatherData = originalDisplayWeatherData;
+        window.API_KEY = originalAPIKey;
     });
 
-    it('should handle complete location search flow', async () => {
-        window.fetch = jest.fn(() =>
-            Promise.resolve({
-                ok: true,
-                status: 200,
-                json: () => Promise.resolve(TestData.sampleWeatherData)
-            })
-        );
+    it('should handle error flow and show appropriate UI', async () => {
+        const originalAPIKey = window.API_KEY;
+        window.API_KEY = 'valid-api-key-123456';
+        
+        // Mock geolocation permission denied
+        mockGeolocation.getCurrentPosition.mockImplementation((success, error) => {
+            error({
+                code: 1,
+                PERMISSION_DENIED: 1,
+                POSITION_UNAVAILABLE: 2,
+                TIMEOUT: 3
+            });
+        });
+        
+        WeatherAPI.getWeatherData();
+        
+        expect(StateManager.hasError()).toBe(true);
+        expect(mockElements.error.style.display).toBe('flex');
+        expect(mockElements.loading.style.display).toBe('none');
+        
+        window.API_KEY = originalAPIKey;
+    });
 
+    it('should handle location search to weather display flow', async () => {
+        const originalAPIKey = window.API_KEY;
+        window.API_KEY = 'valid-api-key-123456';
+        
+        const mockFetch = MockAPI.mockFetchSuccess(TestData.mockWeatherData);
+        
+        const originalDisplayWeatherData = WeatherDisplay.displayWeatherData;
+        WeatherDisplay.displayWeatherData = TestRunner.fn();
+        
         await WeatherAPI.getWeatherDataByLocation('London');
-
-        expect(window.fetch).toHaveBeenCalledWith(
-            expect.stringContaining('London')
-        );
-        expect(StateManager.setWeatherData).toHaveBeenCalled();
-        expect(WeatherDisplay.displayWeatherData).toHaveBeenCalled();
-    });
-
-    it('should show loading state during API calls', async () => {
-        window.fetch = jest.fn(() =>
-            new Promise(resolve => {
-                setTimeout(() => {
-                    resolve({
-                        ok: true,
-                        status: 200,
-                        json: () => Promise.resolve(TestData.sampleWeatherData)
-                    });
-                }, 100);
-            })
-        );
-
-        const promise = WeatherAPI.getWeatherDataByLocation('London');
         
-        // Should show loading state immediately
-        expect(DOM.loading.style.display).toBe('flex');
+        expect(mockFetch).toHaveBeenCalled();
+        expect(WeatherDisplay.displayWeatherData).toHaveBeenCalledWith(TestData.mockWeatherData);
+        expect(StateManager.getWeatherData()).toEqual(TestData.mockWeatherData);
         
-        await promise;
+        WeatherDisplay.displayWeatherData = originalDisplayWeatherData;
+        window.API_KEY = originalAPIKey;
     });
 });
