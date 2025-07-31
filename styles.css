@@ -778,13 +778,51 @@ body.dark-mode .uv-warning {
 .visibility-item {
     flex-direction: column;
     align-items: flex-start !important;
-    gap: 8px;
+    gap: 12px;
     padding: 15px;
     background: rgba(116, 185, 255, 0.05);
     border-radius: 10px;
     border: 1px solid rgba(116, 185, 255, 0.15);
     transition: all 0.3s ease;
     position: relative;
+}
+
+.visibility-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.visibility-header:hover {
+    transform: translateY(-1px);
+}
+
+.visibility-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    margin: 0 10px;
+}
+
+.visibility-expandable {
+    width: 100%;
+    margin-top: 8px;
+    animation: slideDown 0.3s ease-out;
+}
+
+.visibility-description-full {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-style: italic;
+    margin-bottom: 12px;
+    padding: 8px 12px;
+    background: rgba(116, 185, 255, 0.05);
+    border-radius: 6px;
+    border-left: 3px solid #74b9ff;
 }
 
 .visibility-item:hover {
@@ -1049,27 +1087,35 @@ body.dark-mode .visibility-extreme {
 }
 
 .visibility-driving, .visibility-activities {
-    padding: 15px;
+    padding: 12px;
     background: rgba(116, 185, 255, 0.03);
-    border-radius: 10px;
+    border-radius: 8px;
     border: 1px solid rgba(116, 185, 255, 0.1);
+    margin-bottom: 8px;
 }
 
-.visibility-driving h5, .visibility-activities h5 {
+.visibility-driving:last-child, .visibility-activities:last-child {
+    margin-bottom: 0;
+}
+
+.visibility-driving h6, .visibility-activities h6 {
     color: var(--text-primary);
-    margin: 0 0 10px 0;
-    font-size: 1rem;
+    margin: 0 0 8px 0;
+    font-size: 0.9rem;
+    font-weight: 600;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
 }
 
-.visibility-driving h5 i {
+.visibility-driving h6 i {
     color: #74b9ff;
+    font-size: 0.8rem;
 }
 
-.visibility-activities h5 i {
+.visibility-activities h6 i {
     color: #27ae60;
+    font-size: 0.8rem;
 }
 
 .visibility-driving p {
@@ -1083,22 +1129,33 @@ body.dark-mode .visibility-extreme {
     list-style: none;
     padding: 0;
     margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
 .visibility-activities li {
     color: var(--text-secondary);
     font-size: 0.9rem;
-    padding: 4px 0;
+    padding: 8px 12px;
+    background: rgba(39, 174, 96, 0.05);
+    border-radius: 6px;
+    border-left: 3px solid #27ae60;
+    transition: all 0.2s ease;
     position: relative;
-    padding-left: 20px;
+}
+
+.visibility-activities li:hover {
+    background: rgba(39, 174, 96, 0.1);
+    transform: translateX(2px);
 }
 
 .visibility-activities li::before {
-    content: "•";
+    content: "✓";
     color: #27ae60;
-    position: absolute;
-    left: 0;
     font-weight: bold;
+    margin-right: 8px;
+    font-size: 0.8rem;
 }
 
 /* Visibility Warning */
@@ -1623,5 +1680,6 @@ body.dark-mode .visibility-warning {
     
     .visibility-activities li {
         font-size: 0.8rem;
+        padding: 6px 10px;
     }
 }

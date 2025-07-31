@@ -1,4 +1,4 @@
-# 🌤️ Advanced Weather App
+# 🌤️ Simple Weather App
 
 A feature-rich, modern weather application with dynamic animations, dark mode, location search, and comprehensive weather alerts. Built with a modular JavaScript architecture for enhanced maintainability and user experience.
 
