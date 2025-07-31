@@ -289,7 +289,7 @@ We welcome contributions! This modular architecture makes it easy to:
 
 **🌟 Star this project if you find it useful!**
 
-*Built with ❤️ using modern web technologies and best practices*
+*Built with 💖 using modern web technologies, best practices and Cursor*
 
 ![Made with JavaScript](https://img.shields.io/badge/Made%20with-JavaScript-yellow?style=for-the-badge&logo=javascript)
 ![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)
