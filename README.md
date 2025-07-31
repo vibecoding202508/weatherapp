@@ -1,4 +1,4 @@
-# 🌤️ Advanced Weather App
+# 🌤️ Simple Weather App
 
 > A sophisticated, feature-rich weather application built with modern web technologies and a modular JavaScript architecture.
 
