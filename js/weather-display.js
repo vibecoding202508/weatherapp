@@ -27,7 +27,8 @@ const WeatherDisplay = {
         // Apply weather-based background colors
         WeatherDisplay.applyWeatherBackground(current.condition.text, current);
         
-        DOMUtils.setText(DOM.visibility, `${current.vis_km} km`);
+        // Enhanced visibility display
+        WeatherDisplay.updateVisibilityDisplay(current.vis_km, current.condition.text);
         DOMUtils.setText(DOM.humidity, `${current.humidity}%`);
         DOMUtils.setText(DOM.wind, `${current.wind_kph} km/h ${current.wind_dir}`);
         
@@ -118,9 +119,150 @@ const WeatherDisplay = {
 
     // Update weather stats (humidity, wind, visibility)
     updateWeatherStats: (current) => {
-        DOMUtils.setText(DOM.visibility, `${current.vis_km} km`);
+        WeatherDisplay.updateVisibilityDisplay(current.vis_km, current.condition.text);
         DOMUtils.setText(DOM.humidity, `${current.humidity}%`);
         DOMUtils.setText(DOM.wind, `${current.wind_kph} km/h ${current.wind_dir}`);
+    },
+
+    // Update visibility display with detailed analysis
+    updateVisibilityDisplay: (visibilityKm, weatherCondition) => {
+        const analysis = VisibilityUtils.analyzeVisibility(visibilityKm, weatherCondition);
+        
+        // Update basic visibility display
+        DOMUtils.setText(DOM.visibility, VisibilityUtils.formatVisibility(visibilityKm));
+        
+        // Update visibility icon
+        const visibilityIcon = document.getElementById('visibility-icon');
+        if (visibilityIcon) {
+            visibilityIcon.className = analysis.icon;
+        }
+        
+        // Update visibility container class
+        const visibilityContainer = document.getElementById('visibility-container');
+        if (visibilityContainer) {
+            // Remove existing visibility classes
+            visibilityContainer.classList.remove(
+                'visibility-excellent', 'visibility-very-good', 'visibility-good',
+                'visibility-moderate', 'visibility-poor', 'visibility-very-poor', 'visibility-extreme'
+            );
+            visibilityContainer.classList.add(analysis.cssClass);
+        }
+        
+        // Update visibility category and description
+        const categoryElement = document.getElementById('visibility-category');
+        const descriptionElement = document.getElementById('visibility-description');
+        
+        if (categoryElement) {
+            categoryElement.textContent = analysis.category;
+            categoryElement.className = `visibility-category ${analysis.cssClass}`;
+        }
+        
+        if (descriptionElement) {
+            descriptionElement.textContent = analysis.description;
+        }
+        
+        // Show/hide detailed panel based on conditions (always show for now so you can see the toggle)
+        const detailsPanel = document.getElementById('visibility-details-panel');
+        if (detailsPanel) {
+            // Always show the panel so you can test the toggle button
+            detailsPanel.style.display = 'block';
+            WeatherDisplay.updateVisibilityDetails(analysis);
+            WeatherDisplay.setupVisibilityToggle();
+            
+            // Add a note if visibility is actually good
+            if (analysis.value >= 10 && !analysis.warning) {
+                console.log('Visibility is good, but showing details panel for testing toggle functionality');
+            }
+        }
+        
+        // Show/hide visibility warning
+        const warningElement = document.getElementById('visibility-warning');
+        const warningTextElement = document.getElementById('visibility-warning-text');
+        
+        if (warningElement && warningTextElement) {
+            if (analysis.warning) {
+                warningTextElement.textContent = analysis.warning;
+                warningElement.style.display = 'flex';
+            } else {
+                warningElement.style.display = 'none';
+            }
+        }
+    },
+
+    // Update detailed visibility information
+    updateVisibilityDetails: (analysis) => {
+        // Update weather context
+        const contextElement = document.getElementById('visibility-weather-context');
+        if (contextElement && analysis.weatherContext) {
+            contextElement.textContent = analysis.weatherContext;
+            contextElement.style.display = 'block';
+        } else if (contextElement) {
+            contextElement.style.display = 'none';
+        }
+        
+        // Update driving advice
+        const drivingAdviceElement = document.getElementById('visibility-driving-advice');
+        if (drivingAdviceElement) {
+            drivingAdviceElement.textContent = analysis.drivingAdvice;
+        }
+        
+        // Update activities list
+        const activitiesListElement = document.getElementById('visibility-activities-list');
+        if (activitiesListElement) {
+            activitiesListElement.innerHTML = '';
+            analysis.activities.forEach(activity => {
+                const li = document.createElement('li');
+                li.textContent = activity;
+                activitiesListElement.appendChild(li);
+            });
+        }
+    },
+
+    // Setup visibility toggle functionality
+    setupVisibilityToggle: () => {
+        const toggleButton = document.getElementById('visibility-toggle');
+        const content = document.getElementById('visibility-content');
+        
+        if (toggleButton && content) {
+            // Set initial state - collapsed by default
+            content.style.display = 'none';
+            toggleButton.classList.remove('expanded');
+            
+            // Remove existing click handlers to prevent duplicates
+            toggleButton.replaceWith(toggleButton.cloneNode(true));
+            const newToggleButton = document.getElementById('visibility-toggle');
+            
+            // Add fresh click handler
+            newToggleButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                WeatherDisplay.toggleVisibilityDetails();
+            });
+        }
+    },
+
+    // Toggle visibility details panel
+    toggleVisibilityDetails: () => {
+        const content = document.getElementById('visibility-content');
+        const toggleButton = document.getElementById('visibility-toggle');
+        
+        if (content && toggleButton) {
+            const isExpanded = toggleButton.classList.contains('expanded');
+            
+            if (isExpanded) {
+                // Collapse with animation
+                content.style.display = 'none';
+                content.classList.remove('expanded');
+                toggleButton.classList.remove('expanded');
+                console.log('Visibility details collapsed');
+            } else {
+                // Expand with animation
+                content.style.display = 'flex';
+                content.classList.add('expanded');
+                toggleButton.classList.add('expanded');
+                console.log('Visibility details expanded');
+            }
+        }
     },
 
     // Clear all weather data from display
@@ -129,7 +271,25 @@ const WeatherDisplay = {
         DOMUtils.setText(DOM.currentTemp, '');
         DOMUtils.setText(DOM.currentCondition, '');
         DOMUtils.setText(DOM.feelsLike, '');
+        // Clear visibility display
         DOMUtils.setText(DOM.visibility, '');
+        const categoryElement = document.getElementById('visibility-category');
+        const descriptionElement = document.getElementById('visibility-description');
+        const detailsPanel = document.getElementById('visibility-details-panel');
+        const warningElement = document.getElementById('visibility-warning');
+        const content = document.getElementById('visibility-content');
+        const toggleButton = document.getElementById('visibility-toggle');
+        
+        if (categoryElement) categoryElement.textContent = '';
+        if (descriptionElement) descriptionElement.textContent = '';
+        if (detailsPanel) detailsPanel.style.display = 'none';
+        if (warningElement) warningElement.style.display = 'none';
+        if (content) {
+            content.style.display = 'none';
+            content.classList.remove('expanded');
+        }
+        if (toggleButton) toggleButton.classList.remove('expanded');
+        
         DOMUtils.setText(DOM.humidity, '');
         DOMUtils.setText(DOM.wind, '');
         

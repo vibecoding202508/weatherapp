@@ -538,6 +538,375 @@ body.dark-mode .uv-warning {
     border-color: rgba(255, 152, 0, 0.4);
 }
 
+/* Visibility Styling */
+.visibility-item {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 8px;
+    padding: 15px;
+    background: rgba(116, 185, 255, 0.05);
+    border-radius: 10px;
+    border: 1px solid rgba(116, 185, 255, 0.15);
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.visibility-item:hover {
+    background: rgba(116, 185, 255, 0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(116, 185, 255, 0.2);
+}
+
+/* Add a subtle indicator that this is an interactive element */
+.visibility-item::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 15px;
+    transform: translateY(-50%);
+    width: 6px;
+    height: 6px;
+    background: rgba(116, 185, 255, 0.3);
+    border-radius: 50%;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.visibility-item:hover::after {
+    opacity: 1;
+}
+
+.visibility-details {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 100%;
+}
+
+.visibility-basic {
+    font-size: 1rem;
+    color: var(--text-tertiary);
+}
+
+.visibility-category {
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 12px;
+    display: inline-block;
+    margin-top: 4px;
+}
+
+.visibility-description {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-style: italic;
+    margin-top: 2px;
+}
+
+/* Visibility Category Colors */
+.visibility-excellent {
+    background: rgba(39, 174, 96, 0.2);
+    color: #27ae60;
+    border: 1px solid rgba(39, 174, 96, 0.3);
+}
+
+.visibility-very-good {
+    background: rgba(46, 204, 113, 0.2);
+    color: #2ecc71;
+    border: 1px solid rgba(46, 204, 113, 0.3);
+}
+
+.visibility-good {
+    background: rgba(52, 152, 219, 0.2);
+    color: #3498db;
+    border: 1px solid rgba(52, 152, 219, 0.3);
+}
+
+.visibility-moderate {
+    background: rgba(241, 196, 15, 0.2);
+    color: #f1c40f;
+    border: 1px solid rgba(241, 196, 15, 0.3);
+}
+
+.visibility-poor {
+    background: rgba(230, 126, 34, 0.2);
+    color: #e67e22;
+    border: 1px solid rgba(230, 126, 34, 0.3);
+}
+
+.visibility-very-poor {
+    background: rgba(231, 76, 60, 0.2);
+    color: #e74c3c;
+    border: 1px solid rgba(231, 76, 60, 0.3);
+}
+
+.visibility-extreme {
+    background: rgba(192, 57, 43, 0.2);
+    color: #c0392b;
+    border: 1px solid rgba(192, 57, 43, 0.3);
+}
+
+/* Dark mode visibility category colors */
+body.dark-mode .visibility-excellent {
+    background: rgba(39, 174, 96, 0.3);
+    color: #2ecc71;
+}
+
+body.dark-mode .visibility-very-good {
+    background: rgba(46, 204, 113, 0.3);
+    color: #58d68d;
+}
+
+body.dark-mode .visibility-good {
+    background: rgba(52, 152, 219, 0.3);
+    color: #5dade2;
+}
+
+body.dark-mode .visibility-moderate {
+    background: rgba(241, 196, 15, 0.3);
+    color: #f4d03f;
+}
+
+body.dark-mode .visibility-poor {
+    background: rgba(230, 126, 34, 0.3);
+    color: #f39c12;
+}
+
+body.dark-mode .visibility-very-poor {
+    background: rgba(231, 76, 60, 0.3);
+    color: #ec7063;
+}
+
+body.dark-mode .visibility-extreme {
+    background: rgba(192, 57, 43, 0.3);
+    color: #e74c3c;
+}
+
+/* Detailed Visibility Panel */
+.visibility-details-expanded {
+    background: var(--card-bg);
+    border-radius: 15px;
+    padding: 20px;
+    margin-top: 20px;
+    border: 1px solid rgba(116, 185, 255, 0.2);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.visibility-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(116, 185, 255, 0.2);
+}
+
+.visibility-header h4 {
+    color: var(--text-primary);
+    font-size: 1.1rem;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.visibility-header h4 i {
+    color: #74b9ff;
+}
+
+.visibility-toggle {
+    background: rgba(116, 185, 255, 0.1);
+    border: 1px solid rgba(116, 185, 255, 0.3);
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #74b9ff;
+    position: relative;
+    overflow: hidden;
+}
+
+.visibility-toggle:hover {
+    background: rgba(116, 185, 255, 0.2);
+    transform: scale(1.05);
+    border-color: rgba(116, 185, 255, 0.5);
+}
+
+.visibility-toggle:active {
+    transform: scale(0.95);
+}
+
+.visibility-toggle i {
+    transition: transform 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.visibility-toggle.expanded i {
+    transform: rotate(180deg);
+}
+
+.visibility-toggle.expanded {
+    background: rgba(116, 185, 255, 0.2);
+    border-color: rgba(116, 185, 255, 0.4);
+}
+
+/* Add a subtle pulse effect when expanded */
+.visibility-toggle.expanded::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 50%;
+    background: rgba(116, 185, 255, 0.1);
+    animation: togglePulse 2s ease-in-out infinite;
+}
+
+@keyframes togglePulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 0.3;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 0.1;
+    }
+}
+
+.visibility-content {
+    display: none;
+    flex-direction: column;
+    gap: 15px;
+    animation: slideDown 0.3s ease-out;
+}
+
+.visibility-content.expanded {
+    display: flex;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.visibility-weather-context {
+    padding: 12px;
+    background: rgba(116, 185, 255, 0.05);
+    border-radius: 8px;
+    border-left: 3px solid #74b9ff;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.4;
+}
+
+.visibility-driving, .visibility-activities {
+    padding: 15px;
+    background: rgba(116, 185, 255, 0.03);
+    border-radius: 10px;
+    border: 1px solid rgba(116, 185, 255, 0.1);
+}
+
+.visibility-driving h5, .visibility-activities h5 {
+    color: var(--text-primary);
+    margin: 0 0 10px 0;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.visibility-driving h5 i {
+    color: #74b9ff;
+}
+
+.visibility-activities h5 i {
+    color: #27ae60;
+}
+
+.visibility-driving p {
+    color: var(--text-secondary);
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.visibility-activities ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.visibility-activities li {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    padding: 4px 0;
+    position: relative;
+    padding-left: 20px;
+}
+
+.visibility-activities li::before {
+    content: "•";
+    color: #27ae60;
+    position: absolute;
+    left: 0;
+    font-weight: bold;
+}
+
+/* Visibility Warning */
+.visibility-warning {
+    background: linear-gradient(135deg, rgba(231, 76, 60, 0.15), rgba(192, 57, 43, 0.1));
+    border: 1px solid rgba(231, 76, 60, 0.3);
+    border-left: 4px solid #e74c3c;
+    border-radius: 10px;
+    padding: 15px 20px;
+    margin-top: 15px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    backdrop-filter: blur(5px);
+    animation: visibilityWarningPulse 2s ease-in-out infinite alternate;
+}
+
+.visibility-warning i {
+    color: #e74c3c;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.visibility-warning span {
+    color: var(--text-primary);
+    font-weight: 500;
+    font-size: 0.95rem;
+    line-height: 1.4;
+}
+
+@keyframes visibilityWarningPulse {
+    0% {
+        box-shadow: 0 0 5px rgba(231, 76, 60, 0.3), 0 2px 10px rgba(231, 76, 60, 0.1);
+    }
+    100% {
+        box-shadow: 0 0 20px rgba(231, 76, 60, 0.4), 0 2px 15px rgba(231, 76, 60, 0.2);
+    }
+}
+
+body.dark-mode .visibility-warning {
+    background: linear-gradient(135deg, rgba(231, 76, 60, 0.2), rgba(192, 57, 43, 0.15));
+    border-color: rgba(231, 76, 60, 0.4);
+}
+
 /* Weather Alerts Styling */
 .weather-alerts {
     background: var(--card-bg);
@@ -843,6 +1212,45 @@ body.dark-mode .uv-warning {
     .uv-warning span {
         font-size: 0.9rem;
     }
+    
+    /* Visibility mobile responsive */
+    .visibility-item {
+        padding: 12px;
+    }
+    
+    .visibility-details-expanded {
+        padding: 15px;
+        margin-top: 15px;
+    }
+    
+    .visibility-driving, .visibility-activities {
+        padding: 12px;
+    }
+    
+    .visibility-warning {
+        padding: 12px 15px;
+        margin-top: 12px;
+        flex-direction: column;
+        text-align: center;
+        gap: 8px;
+    }
+    
+    .visibility-warning span {
+        font-size: 0.85rem;
+    }
+    
+    .visibility-toggle {
+        width: 30px;
+        height: 30px;
+    }
+    
+    .visibility-toggle i {
+        font-size: 0.8rem;
+    }
+    
+    .visibility-header h4 {
+        font-size: 1rem;
+    }
 }
 
 @media (max-width: 480px) {
@@ -921,5 +1329,63 @@ body.dark-mode .uv-warning {
     
     .api-key-notice p {
         font-size: 0.85rem;
+    }
+    
+    /* Extra small screens visibility adjustments */
+    .visibility-item {
+        padding: 10px;
+    }
+    
+    .visibility-category {
+        font-size: 0.8rem;
+        padding: 1px 6px;
+    }
+    
+    .visibility-description {
+        font-size: 0.8rem;
+    }
+    
+    .visibility-details-expanded {
+        padding: 12px;
+    }
+    
+    .visibility-header {
+        margin-bottom: 10px;
+        padding-bottom: 8px;
+    }
+    
+    .visibility-header h4 {
+        font-size: 0.9rem;
+    }
+    
+    .visibility-toggle {
+        width: 28px;
+        height: 28px;
+        touch-action: manipulation;
+    }
+    
+    .visibility-toggle i {
+        font-size: 0.7rem;
+    }
+    
+    .visibility-weather-context {
+        padding: 10px;
+        font-size: 0.85rem;
+    }
+    
+    .visibility-driving, .visibility-activities {
+        padding: 10px;
+    }
+    
+    .visibility-driving h5, .visibility-activities h5 {
+        font-size: 0.9rem;
+    }
+    
+    .visibility-driving p {
+        font-size: 0.8rem;
+    }
+    
+    .visibility-activities li {
+        font-size: 0.8rem;
     }
 }
