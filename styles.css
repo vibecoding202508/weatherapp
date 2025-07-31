@@ -469,6 +469,13 @@ header h1 i {
     gap: 10px;
     font-size: 1rem;
     color: var(--text-tertiary);
+    list-style: none !important;
+    list-style-type: none !important;
+}
+
+.info-item::before,
+.info-item::after {
+    display: none !important;
 }
 
 .info-item i {
@@ -486,6 +493,13 @@ header h1 i {
     background: rgba(116, 185, 255, 0.05);
     border: 1px solid rgba(116, 185, 255, 0.1);
     transition: all 0.3s ease;
+    list-style: none !important;
+    list-style-type: none !important;
+}
+
+.visibility-item::before,
+.visibility-item::after {
+    display: none !important;
 }
 
 .visibility-item:hover {
@@ -510,8 +524,10 @@ header h1 i {
 }
 
 .visibility-header #visibility-icon {
-    margin-top: 20px;
+    margin-top: 18px;
 }
+
+
 
 .visibility-summary {
     flex: 1;
