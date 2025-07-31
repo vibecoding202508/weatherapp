@@ -161,32 +161,19 @@ const WeatherDisplay = {
             descriptionElement.textContent = analysis.description;
         }
         
-        // Show/hide detailed panel based on conditions (always show for now so you can see the toggle)
-        const detailsPanel = document.getElementById('visibility-details-panel');
-        if (detailsPanel) {
-            // Always show the panel so you can test the toggle button
-            detailsPanel.style.display = 'block';
-            WeatherDisplay.updateVisibilityDetails(analysis);
-            WeatherDisplay.setupVisibilityToggle();
-            
-            // Add a note if visibility is actually good
-            if (analysis.value >= 10 && !analysis.warning) {
-                console.log('Visibility is good, but showing details panel for testing toggle functionality');
-            }
-        }
-        
-        // Show/hide visibility warning
-        const warningElement = document.getElementById('visibility-warning');
-        const warningTextElement = document.getElementById('visibility-warning-text');
-        
-        if (warningElement && warningTextElement) {
-            if (analysis.warning) {
-                warningTextElement.textContent = analysis.warning;
-                warningElement.style.display = 'flex';
-            } else {
-                warningElement.style.display = 'none';
-            }
-        }
+                 // Setup the toggle functionality
+         WeatherDisplay.setupVisibilityToggle();
+         
+         // Update detailed content
+         WeatherDisplay.updateVisibilityDetails(analysis);
+         
+         // Add warning to description if needed
+         if (analysis.warning) {
+             const descriptionElement = document.getElementById('visibility-description');
+             if (descriptionElement) {
+                 descriptionElement.innerHTML = `<strong style="color: #e74c3c;">${analysis.warning}</strong><br>${analysis.description}`;
+             }
+         }
     },
 
     // Update detailed visibility information
@@ -218,52 +205,65 @@ const WeatherDisplay = {
         }
     },
 
-    // Setup visibility toggle functionality
-    setupVisibilityToggle: () => {
-        const toggleButton = document.getElementById('visibility-toggle');
-        const content = document.getElementById('visibility-content');
-        
-        if (toggleButton && content) {
-            // Set initial state - collapsed by default
-            content.style.display = 'none';
-            toggleButton.classList.remove('expanded');
-            
-            // Remove existing click handlers to prevent duplicates
-            toggleButton.replaceWith(toggleButton.cloneNode(true));
-            const newToggleButton = document.getElementById('visibility-toggle');
-            
-            // Add fresh click handler
-            newToggleButton.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                WeatherDisplay.toggleVisibilityDetails();
-            });
-        }
-    },
+         // Setup visibility toggle functionality
+     setupVisibilityToggle: () => {
+         const toggleButton = document.getElementById('visibility-toggle');
+         const expandableContent = document.getElementById('visibility-expandable');
+         const visibilityHeader = document.getElementById('visibility-header');
+         
+         if (toggleButton && expandableContent) {
+             // Set initial state - collapsed by default
+             expandableContent.style.display = 'none';
+             toggleButton.classList.remove('expanded');
+             
+             // Remove existing click handlers to prevent duplicates
+             toggleButton.replaceWith(toggleButton.cloneNode(true));
+             const newToggleButton = document.getElementById('visibility-toggle');
+             
+             // Add click handler to both button and header for better UX
+             const clickHandler = (e) => {
+                 e.preventDefault();
+                 e.stopPropagation();
+                 WeatherDisplay.toggleVisibilityDetails();
+             };
+             
+             newToggleButton.addEventListener('click', clickHandler);
+             
+             // Also make the header clickable (excluding the toggle button)
+             if (visibilityHeader) {
+                 visibilityHeader.addEventListener('click', (e) => {
+                     if (e.target !== newToggleButton && !newToggleButton.contains(e.target)) {
+                         clickHandler(e);
+                     }
+                 });
+                 visibilityHeader.style.cursor = 'pointer';
+             }
+         }
+     },
 
-    // Toggle visibility details panel
-    toggleVisibilityDetails: () => {
-        const content = document.getElementById('visibility-content');
-        const toggleButton = document.getElementById('visibility-toggle');
-        
-        if (content && toggleButton) {
-            const isExpanded = toggleButton.classList.contains('expanded');
-            
-            if (isExpanded) {
-                // Collapse with animation
-                content.style.display = 'none';
-                content.classList.remove('expanded');
-                toggleButton.classList.remove('expanded');
-                console.log('Visibility details collapsed');
-            } else {
-                // Expand with animation
-                content.style.display = 'flex';
-                content.classList.add('expanded');
-                toggleButton.classList.add('expanded');
-                console.log('Visibility details expanded');
-            }
-        }
-    },
+         // Toggle visibility details panel
+     toggleVisibilityDetails: () => {
+         const expandableContent = document.getElementById('visibility-expandable');
+         const toggleButton = document.getElementById('visibility-toggle');
+         
+         if (expandableContent && toggleButton) {
+             const isExpanded = toggleButton.classList.contains('expanded');
+             
+             if (isExpanded) {
+                 // Collapse with animation
+                 expandableContent.style.display = 'none';
+                 expandableContent.classList.remove('expanded');
+                 toggleButton.classList.remove('expanded');
+                 console.log('Visibility details collapsed');
+             } else {
+                 // Expand with animation
+                 expandableContent.style.display = 'block';
+                 expandableContent.classList.add('expanded');
+                 toggleButton.classList.add('expanded');
+                 console.log('Visibility details expanded');
+             }
+         }
+     },
 
     // Clear all weather data from display
     clearDisplay: () => {
@@ -271,24 +271,28 @@ const WeatherDisplay = {
         DOMUtils.setText(DOM.currentTemp, '');
         DOMUtils.setText(DOM.currentCondition, '');
         DOMUtils.setText(DOM.feelsLike, '');
-        // Clear visibility display
-        DOMUtils.setText(DOM.visibility, '');
-        const categoryElement = document.getElementById('visibility-category');
-        const descriptionElement = document.getElementById('visibility-description');
-        const detailsPanel = document.getElementById('visibility-details-panel');
-        const warningElement = document.getElementById('visibility-warning');
-        const content = document.getElementById('visibility-content');
-        const toggleButton = document.getElementById('visibility-toggle');
-        
-        if (categoryElement) categoryElement.textContent = '';
-        if (descriptionElement) descriptionElement.textContent = '';
-        if (detailsPanel) detailsPanel.style.display = 'none';
-        if (warningElement) warningElement.style.display = 'none';
-        if (content) {
-            content.style.display = 'none';
-            content.classList.remove('expanded');
-        }
-        if (toggleButton) toggleButton.classList.remove('expanded');
+                 // Clear visibility display
+         DOMUtils.setText(DOM.visibility, '');
+         const categoryElement = document.getElementById('visibility-category');
+         const descriptionElement = document.getElementById('visibility-description');
+         const expandableContent = document.getElementById('visibility-expandable');
+         const toggleButton = document.getElementById('visibility-toggle');
+         const visibilityContainer = document.getElementById('visibility-container');
+         
+         if (categoryElement) categoryElement.textContent = '';
+         if (descriptionElement) descriptionElement.textContent = '';
+         if (expandableContent) {
+             expandableContent.style.display = 'none';
+             expandableContent.classList.remove('expanded');
+         }
+         if (toggleButton) toggleButton.classList.remove('expanded');
+         if (visibilityContainer) {
+             // Remove all visibility category classes
+             visibilityContainer.classList.remove(
+                 'visibility-excellent', 'visibility-very-good', 'visibility-good',
+                 'visibility-moderate', 'visibility-poor', 'visibility-very-poor', 'visibility-extreme'
+             );
+         }
         
         DOMUtils.setText(DOM.humidity, '');
         DOMUtils.setText(DOM.wind, '');

@@ -59,11 +59,31 @@
                         <p id="feels-like"></p>
                         <div class="additional-info">
                             <div class="info-item visibility-item" id="visibility-container">
-                                <i class="fas fa-eye" id="visibility-icon"></i>
-                                <div class="visibility-details">
-                                    <span class="visibility-basic">Visibility: <span id="visibility"></span></span>
-                                    <span class="visibility-category" id="visibility-category"></span>
-                                    <span class="visibility-description" id="visibility-description"></span>
+                                <div class="visibility-header" id="visibility-header">
+                                    <i class="fas fa-eye" id="visibility-icon"></i>
+                                    <div class="visibility-summary">
+                                        <span class="visibility-basic">Visibility: <span id="visibility"></span></span>
+                                        <span class="visibility-category" id="visibility-category"></span>
+                                    </div>
+                                    <button class="visibility-toggle" id="visibility-toggle" title="Show/Hide Details">
+                                        <i class="fas fa-chevron-down"></i>
+                                    </button>
+                                </div>
+                                
+                                <div class="visibility-expandable" id="visibility-expandable" style="display: none;">
+                                    <div class="visibility-description-full" id="visibility-description"></div>
+                                    
+                                    <div class="visibility-weather-context" id="visibility-weather-context"></div>
+                                    
+                                    <div class="visibility-driving" id="visibility-driving">
+                                        <h6><i class="fas fa-car"></i> Driving</h6>
+                                        <p id="visibility-driving-advice"></p>
+                                    </div>
+                                    
+                                    <div class="visibility-activities" id="visibility-activities">
+                                        <h6><i class="fas fa-hiking"></i> Activities</h6>
+                                        <ul id="visibility-activities-list"></ul>
+                                    </div>
                                 </div>
                             </div>
                             <div class="info-item">
@@ -79,33 +99,7 @@
                                 <span>UV Index: <span id="uv-index"></span></span>
                             </div>
                         </div>
-                        
-                        <!-- Detailed Visibility Information -->
-                        <div class="visibility-details-expanded" id="visibility-details-panel" style="display: none;">
-                            <div class="visibility-header">
-                                <h4><i class="fas fa-info-circle"></i> Visibility Details</h4>
-                                <button class="visibility-toggle" id="visibility-toggle" title="Show/Hide Details">
-                                    <i class="fas fa-chevron-down"></i>
-                                </button>
-                            </div>
-                            <div class="visibility-content" id="visibility-content">
-                                <div class="visibility-weather-context" id="visibility-weather-context"></div>
-                                <div class="visibility-driving" id="visibility-driving">
-                                    <h5><i class="fas fa-car"></i> Driving Conditions</h5>
-                                    <p id="visibility-driving-advice"></p>
-                                </div>
-                                <div class="visibility-activities" id="visibility-activities">
-                                    <h5><i class="fas fa-hiking"></i> Activity Recommendations</h5>
-                                    <ul id="visibility-activities-list"></ul>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Visibility Warning -->
-                        <div class="visibility-warning" id="visibility-warning" style="display: none;">
-                            <i class="fas fa-exclamation-triangle"></i>
-                            <span id="visibility-warning-text"></span>
-                        </div>
+
                         
                         <!-- UV Warning -->
                         <div class="uv-warning" id="uv-warning" style="display: none;">
@@ -139,6 +133,7 @@
     <script src="js/dom.js"></script>
     <script src="js/state.js"></script>
     <script src="js/utils.js"></script>
+    <script src="js/visibility-utils.js"></script>
     
     <!-- Feature modules -->
     <script src="js/dark-mode.js"></script>
