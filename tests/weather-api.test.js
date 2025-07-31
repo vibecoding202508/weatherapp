@@ -148,8 +148,10 @@ describe('Weather API', () => {
         // Mock WeatherAnimations and WeatherAlerts to prevent additional DOM access
         const originalApplyWeatherAnimation = WeatherAnimations.applyWeatherAnimation;
         const originalFetchMeteoAlarmAlerts = WeatherAlerts.fetchMeteoAlarmAlerts;
+        const originalDisplayWeatherData = WeatherDisplay.displayWeatherData;
         WeatherAnimations.applyWeatherAnimation = jest.fn();
         WeatherAlerts.fetchMeteoAlarmAlerts = jest.fn();
+        WeatherDisplay.displayWeatherData = jest.fn();
 
         // Mock document.createElement for forecast display
         const originalCreateElement = document.createElement;
@@ -196,10 +198,11 @@ describe('Weather API', () => {
         expect(mockFetch).toHaveBeenCalledWith(
             expect.stringContaining('51.5074,-0.1278')
         );
-        expect(window.StateManager.setWeatherData).toHaveBeenCalledWith(TestData.sampleWeatherData);
-        expect(window.mockUIUtils.showWeatherContent).toHaveBeenCalled();
+        expect(StateManager.setWeatherData).toHaveBeenCalledWith(TestData.sampleWeatherData);
+        expect(WeatherDisplay.displayWeatherData).toHaveBeenCalledWith(TestData.sampleWeatherData);
         WeatherAnimations.applyWeatherAnimation = originalApplyWeatherAnimation;
         WeatherAlerts.fetchMeteoAlarmAlerts = originalFetchMeteoAlarmAlerts;
+        WeatherDisplay.displayWeatherData = originalDisplayWeatherData;
         document.createElement = originalCreateElement;
         document.getElementById = originalGetElementById;
         // Note: The mocked properties will be restored automatically due to configurable: true
@@ -356,7 +359,7 @@ describe('Weather API', () => {
         expect(mockFetch).toHaveBeenCalled();
     });
 
-    it('should handle geolocation success', (done) => {
+    it('should handle geolocation success', () => {
         const mockGeolocation = {
             getCurrentPosition: jest.fn((success) => {
                 success({
@@ -379,13 +382,10 @@ describe('Weather API', () => {
 
         WeatherAPI.getWeatherData();
 
-        setTimeout(() => {
-            expect(mockGeolocation.getCurrentPosition).toHaveBeenCalled();
-            done();
-        }, 100);
+        expect(mockGeolocation.getCurrentPosition).toHaveBeenCalled();
     });
 
-    it('should handle geolocation errors', (done) => {
+    it('should handle geolocation errors', () => {
         const mockGeolocation = {
             getCurrentPosition: jest.fn((success, error) => {
                 error({
@@ -399,10 +399,7 @@ describe('Weather API', () => {
 
         WeatherAPI.getWeatherData();
 
-        setTimeout(() => {
-            expect(mockGeolocation.getCurrentPosition).toHaveBeenCalled();
-            done();
-        }, 100);
+        expect(mockGeolocation.getCurrentPosition).toHaveBeenCalled();
     });
 
     it('should handle missing geolocation support', () => {
