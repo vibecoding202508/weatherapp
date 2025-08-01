@@ -81,6 +81,11 @@ const DarkMode = {
     }
 };
 
+// Make DarkMode globally available for browser scripts
+if (typeof window !== 'undefined') {
+    window.DarkMode = DarkMode;
+}
+
 // Export for use in other modules (if using modules)
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = { DarkMode };

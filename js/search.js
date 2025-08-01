@@ -73,6 +73,11 @@ const Search = {
     }
 };
 
+// Make Search globally available for browser scripts
+if (typeof window !== 'undefined') {
+    window.Search = Search;
+}
+
 // Export for use in other modules (if using modules)
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = { Search };

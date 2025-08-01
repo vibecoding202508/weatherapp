@@ -68,7 +68,7 @@
 </head>
 <body>
     <h1>Weather App Tests</h1>
-    <button onclick="TestFramework.runTests()">Run Tests</button>
+    <button id="run-tests-btn">Run Tests</button>
     <div id="test-summary"></div>
     <div id="test-results"></div>
 
@@ -100,11 +100,11 @@
             <input type="text" id="location-search">
             <button id="search-btn">Search</button>
             <button id="current-location-btn">Current Location</button>
-        </div>
+            </div>
         <button id="dark-mode-toggle">
             <span id="toggle-icon"></span>
         </button>
-    </div>
+        </div>
 
     <!-- Load dependencies -->
     <script src="../js/config.js"></script>
@@ -115,19 +115,118 @@
     <script src="../js/visibility-utils.js"></script>
     <script src="../js/weather-api.js"></script>
     <script src="../js/weather-display.js"></script>
+    <script src="../js/dark-mode.js"></script>
+    <script src="../js/search.js"></script>
+    <script src="../js/weather-alerts.js"></script>
 
     <!-- Load test framework -->
     <script src="test-framework.js"></script>
     
     <!-- Load test data and mocks -->
     <script src="test-data.js"></script>
-    
+
     <!-- Load test files -->
     <script src="utils.test.js"></script>
+    <script src="state-manager.test.js"></script>
+
+
 
     <script>
-        // Auto-run tests when page loads
-        window.onload = () => TestFramework.runTests();
+        // Debug function to check what's loaded
+        function debugTestRunner() {
+            console.log('=== Debug Test Runner ===');
+            console.log('TestFramework:', typeof TestFramework, TestFramework);
+            console.log('ValidationUtils:', typeof ValidationUtils);
+            console.log('StringUtils:', typeof StringUtils);
+            console.log('DateUtils:', typeof DateUtils);
+            console.log('MathUtils:', typeof MathUtils);
+            console.log('VisibilityUtils:', typeof VisibilityUtils);
+            console.log('DOMUtils:', typeof DOMUtils);
+            
+            // Check if TestFramework methods exist
+            if (typeof TestFramework === 'object') {
+                console.log('TestFramework.runTests:', typeof TestFramework.runTests);
+                console.log('TestFramework.tests length:', TestFramework.tests ? TestFramework.tests.length : 'tests property missing');
+            }
+            
+            // Log any JavaScript errors
+            window.addEventListener('error', function(e) {
+                console.error('JavaScript Error:', e.error, e.filename, e.lineno);
+            });
+        }
+
+        // Enhanced run tests with error handling
+        function runTestsWithErrorHandling() {
+            try {
+                console.log('Button clicked - attempting to run tests...');
+                debugTestRunner();
+                
+                if (typeof TestFramework === 'undefined') {
+                    throw new Error('TestFramework is not defined');
+                }
+                
+                if (typeof TestFramework.runTests !== 'function') {
+                    throw new Error('TestFramework.runTests is not a function');
+                }
+                
+                if (!TestFramework.tests || TestFramework.tests.length === 0) {
+                    throw new Error('No tests found in TestFramework.tests');
+                }
+                
+                console.log('Running tests...');
+                
+                // Show loading state
+                const summary = document.getElementById('test-summary');
+                const results = document.getElementById('test-results');
+                summary.innerHTML = '<div style="color: #007bff; font-weight: bold;">🔄 Running tests...</div>';
+                results.innerHTML = '<div style="padding: 20px; text-align: center;">Please wait while tests are running...</div>';
+                
+                // Run tests with a small delay to show loading state
+                setTimeout(() => {
+                    TestFramework.runTests();
+                    console.log('Tests completed');
+                }, 100);
+                
+            } catch (error) {
+                console.error('Error running tests:', error);
+                
+                // Display error in the UI
+                const summary = document.getElementById('test-summary');
+                const results = document.getElementById('test-results');
+                
+                summary.innerHTML = `<div style="color: red; font-weight: bold;">❌ Error: ${error.message}</div>`;
+                results.innerHTML = `
+                    <div style="background: #ffebee; padding: 15px; border-radius: 5px; color: #c62828;">
+                        <h3>Debugging Information:</h3>
+                        <ul>
+                            <li>TestFramework type: ${typeof TestFramework}</li>
+                            <li>TestFramework.runTests type: ${typeof (TestFramework && TestFramework.runTests)}</li>
+                            <li>Tests array length: ${TestFramework && TestFramework.tests ? TestFramework.tests.length : 'undefined'}</li>
+                            <li>Error: ${error.message}</li>
+                        </ul>
+                        <p><strong>Check the browser console for more details.</strong></p>
+                </div>
+            `;
+            }
+        }
+
+        // Initialize when page loads
+        window.onload = () => {
+            console.log('Page loaded, initializing test runner...');
+            debugTestRunner();
+            
+            // Set up the button click handler
+            const button = document.getElementById('run-tests-btn');
+            if (button) {
+                button.onclick = runTestsWithErrorHandling;
+                console.log('Button click handler set up');
+                        } else {
+                console.error('Run Tests button not found');
+            }
+            
+            // Don't auto-run tests, wait for button click
+            console.log('Test runner ready. Click the "Run Tests" button to start.');
+        };
     </script>
 </body>
 </html>

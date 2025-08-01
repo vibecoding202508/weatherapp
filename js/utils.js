@@ -83,6 +83,15 @@ const ValidationUtils = {
 
 
 
+// Make utility functions globally available for browser scripts
+if (typeof window !== 'undefined') {
+    window.DateUtils = DateUtils;
+    window.MathUtils = MathUtils;
+    window.StringUtils = StringUtils;
+    window.ValidationUtils = ValidationUtils;
+    window.decodeBase64UTF8 = decodeBase64UTF8;
+}
+
 // Export for use in other modules (if using modules)
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {

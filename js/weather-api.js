@@ -128,6 +128,11 @@ const WeatherAPI = {
     }
 };
 
+// Make WeatherAPI globally available for browser scripts
+if (typeof window !== 'undefined') {
+    window.WeatherAPI = WeatherAPI;
+}
+
 // Export for use in other modules (if using modules)
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = { WeatherAPI };

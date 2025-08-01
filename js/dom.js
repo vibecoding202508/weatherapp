@@ -72,6 +72,12 @@ const DOMUtils = {
     }
 };
 
+// Make DOM and DOMUtils globally available for browser scripts
+if (typeof window !== 'undefined') {
+    window.DOM = DOM;
+    window.DOMUtils = DOMUtils;
+}
+
 // Export for use in other modules (if using modules)
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = { DOM, DOMUtils };

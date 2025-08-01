@@ -33,3 +33,13 @@ UIUtils = {
         StateManager.setError(false);
     }
 };
+
+// Make UIUtils globally available for browser scripts
+if (typeof window !== 'undefined') {
+    window.UIUtils = UIUtils;
+}
+
+// Export for use in other modules (if using modules)
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { UIUtils };
+}

@@ -58,6 +58,12 @@ const StateManager = {
     }
 };
 
+// Make StateManager and AppState globally available for browser scripts
+if (typeof window !== 'undefined') {
+    window.AppState = AppState;
+    window.StateManager = StateManager;
+}
+
 // Export for use in other modules (if using modules)
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = { AppState, StateManager };

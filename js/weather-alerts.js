@@ -514,6 +514,11 @@ const WeatherAlerts = {
     }
 };
 
+// Make WeatherAlerts globally available for browser scripts
+if (typeof window !== 'undefined') {
+    window.WeatherAlerts = WeatherAlerts;
+}
+
 // Export for use in other modules (if using modules)
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = { WeatherAlerts };
