@@ -200,6 +200,11 @@ const VisibilityUtils = {
     }
 };
 
+// Make VisibilityUtils globally available for browser scripts
+if (typeof window !== 'undefined') {
+    window.VisibilityUtils = VisibilityUtils;
+}
+
 // Export for use in other modules
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = { VisibilityUtils };
