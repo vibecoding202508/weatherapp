@@ -10,6 +10,55 @@ window.runWeatherDisplayTestSuite = async function() {
         mockDOM = TestData.createMockDOM();
         window.DOM = mockDOM;
         
+        // Mock required utility functions
+        window.MathUtils = {
+            roundTemp: (temp) => Math.round(temp)
+        };
+        
+        window.StateManager = {
+            setWeatherData: jest.fn(),
+            getWeatherData: jest.fn()
+        };
+        
+        window.WeatherAnimations = {
+            applyWeatherAnimation: jest.fn()
+        };
+        
+        window.WeatherAlerts = {
+            fetchMeteoAlarmAlerts: jest.fn()
+        };
+        
+        window.UIUtils = {
+            showWeatherContent: jest.fn()
+        };
+        
+        // Ensure DOMUtils is available
+        if (!window.DOMUtils) {
+            window.DOMUtils = {
+                setText: (element, text) => {
+                    if (element) element.textContent = text;
+                },
+                show: (element) => {
+                    if (element) element.style.display = 'block';
+                },
+                hide: (element) => {
+                    if (element) element.style.display = 'none';
+                },
+                showFlex: (element) => {
+                    if (element) element.style.display = 'flex';
+                }
+            };
+        }
+        
+        // Mock WeatherDisplay methods that are called internally
+        const originalDisplayWeatherData = WeatherDisplay.displayWeatherData;
+        WeatherDisplay.applyWeatherBackground = jest.fn();
+        WeatherDisplay.updateVisibilityDisplay = jest.fn();
+        WeatherDisplay.displayForecast = jest.fn();
+        
+        // Restore the main function we're testing
+        WeatherDisplay.displayWeatherData = originalDisplayWeatherData;
+        
         // The createMockDOM function now handles document.getElementById mocking automatically
     });
 

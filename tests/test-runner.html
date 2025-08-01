@@ -43,6 +43,10 @@
             gap: 15px;
             margin-bottom: 30px;
             flex-wrap: wrap;
+            min-height: 50px; /* Ensure minimum height */
+            border: 2px dashed rgba(102, 126, 234, 0.2); /* Debug border */
+            padding: 10px;
+            border-radius: 10px;
         }
 
         .btn {
@@ -55,6 +59,9 @@
             cursor: pointer;
             transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            white-space: nowrap; /* Prevent text wrapping */
+            min-width: 120px; /* Ensure minimum width */
+            margin: 5px; /* Add some margin for spacing */
         }
 
         .btn:hover {
@@ -344,33 +351,42 @@
             console.log = function(...args) {
                 const message = args.join(' ');
                 consoleOutput += message + '\n';
-                outputElement.textContent = consoleOutput;
-                outputElement.scrollTop = outputElement.scrollHeight;
+                if (outputElement) {
+                    outputElement.textContent = consoleOutput;
+                    outputElement.scrollTop = outputElement.scrollHeight;
+                }
                 originalConsole.log(...args);
             };
 
             console.error = function(...args) {
                 const message = '❌ ' + args.join(' ');
                 consoleOutput += message + '\n';
-                outputElement.textContent = consoleOutput;
-                outputElement.scrollTop = outputElement.scrollHeight;
+                if (outputElement) {
+                    outputElement.textContent = consoleOutput;
+                    outputElement.scrollTop = outputElement.scrollHeight;
+                }
                 originalConsole.error(...args);
             };
 
             console.group = function(name) {
                 consoleOutput += '\n📁 ' + name + '\n';
-                outputElement.textContent = consoleOutput;
+                if (outputElement) {
+                    outputElement.textContent = consoleOutput;
+                }
                 originalConsole.group(name);
             };
 
             console.groupEnd = function() {
                 consoleOutput += '\n';
-                outputElement.textContent = consoleOutput;
+                if (outputElement) {
+                    outputElement.textContent = consoleOutput;
+                }
                 originalConsole.groupEnd();
             };
         }
 
         async function runAllTests() {
+            // Clear and start fresh
             clearOutput();
             interceptConsole();
             
@@ -429,6 +445,7 @@
         }
 
         function runUtilsTests() {
+            // Clear and start fresh
             clearOutput();
             interceptConsole();
             if (window.TestFramework) {
@@ -469,9 +486,21 @@
                 window.TestFramework.results = { passed: 0, failed: 0, total: 0 };
             }
             console.log('🌐 Running API Tests...\n');
+            console.log('🔍 Checking if runWeatherAPITestSuite exists:', typeof window.runWeatherAPITestSuite);
+            
             if (window.runWeatherAPITestSuite) {
-                window.runWeatherAPITestSuite();
+                console.log('✅ Calling runWeatherAPITestSuite...');
+                try {
+                    window.runWeatherAPITestSuite();
+                    console.log('✅ API test suite called successfully');
+                } catch (error) {
+                    console.error('❌ Error calling API test suite:', error);
+                }
+            } else {
+                console.error('❌ runWeatherAPITestSuite function not found!');
+                console.log('Available window functions:', Object.keys(window).filter(key => key.includes('Test')));
             }
+            
             setTimeout(() => {
                 if (window.TestFramework && typeof window.TestFramework.displayResults === 'function') {
                     window.TestFramework.displayResults();
@@ -503,37 +532,34 @@
         }
 
         function clearOutput() {
-            // Use original console methods to avoid interference with intercepted console
-            originalConsole.log('🗑️ Clear button clicked - clearing output...');
-            try {
-                // Clear the console output content
-                consoleOutput = '';
-                const outputElement = document.getElementById('console-output');
-                if (outputElement) {
-                    outputElement.innerHTML = '<div class="loading">🧪 Ready to run tests...</div>';
-                    originalConsole.log('✅ Console output cleared');
-                } else {
-                    originalConsole.error('❌ console-output element not found');
-                }
-                
-                // Clear the test results
-                const resultsElement = document.getElementById('test-results');
-                if (resultsElement) {
-                    resultsElement.innerHTML = '';
-                    originalConsole.log('✅ Test results cleared');
-                } else {
-                    originalConsole.error('❌ test-results element not found');
-                }
-                
-                // Reset test framework results if available
-                if (window.TestFramework) {
-                    window.TestFramework.results = { passed: 0, failed: 0, total: 0 };
-                    originalConsole.log('✅ TestFramework results reset');
-                }
-                
-                originalConsole.log('🧪 Clear operation completed');
-            } catch (error) {
-                originalConsole.error('❌ Error in clearOutput function:', error);
+            // Completely disable console interception
+            console.log = originalConsole.log;
+            console.error = originalConsole.error;
+            console.group = originalConsole.group;
+            console.groupEnd = originalConsole.groupEnd;
+            
+            // Clear the variable
+            consoleOutput = '';
+            
+            // Clear the display safely
+            const outputElement = document.getElementById('console-output');
+            if (outputElement) {
+                // Safe clearing method
+                outputElement.innerHTML = '';
+                outputElement.textContent = '';
+                outputElement.className = 'console-output'; // Reset any classes
+                outputElement.innerHTML = '<div class="loading">🧪 Ready to run tests...</div>';
+            }
+            
+            // Clear test results
+            const resultsElement = document.getElementById('test-results');
+            if (resultsElement) {
+                resultsElement.innerHTML = '';
+            }
+            
+            // Reset test framework
+            if (window.TestFramework) {
+                window.TestFramework.results = { passed: 0, failed: 0, total: 0 };
             }
         }
 
@@ -549,6 +575,23 @@
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🧪 Test Runner Initialized');
             console.log('📱 Ready to test Weather App functionality');
+            
+            // Debug button visibility
+            const buttons = document.querySelectorAll('.test-controls .btn');
+            console.log('🔍 Found', buttons.length, 'buttons in test-controls');
+            buttons.forEach((btn, index) => {
+                console.log(`  Button ${index + 1}:`, btn.textContent.trim(), 'visible:', btn.offsetWidth > 0 && btn.offsetHeight > 0);
+            });
+            
+            // Check container dimensions
+            const container = document.querySelector('.test-controls');
+            if (container) {
+                console.log('🔍 test-controls container:', {
+                    width: container.offsetWidth,
+                    height: container.offsetHeight,
+                    display: getComputedStyle(container).display
+                });
+            }
             
             // Verify TestFramework is loaded
             setTimeout(() => {

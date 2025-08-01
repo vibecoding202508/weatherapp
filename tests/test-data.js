@@ -213,7 +213,9 @@ const TestData = {
             // Add textContent property with getter/setter that converts to string (like real DOM)
             Object.defineProperty(element, 'textContent', {
                 get() { return this._textContent; },
-                set(value) { this._textContent = String(value); }
+                set(value) { this._textContent = String(value || ''); },
+                configurable: true,
+                enumerable: true
             });
             
             return element;
