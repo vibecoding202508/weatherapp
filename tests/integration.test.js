@@ -419,17 +419,6 @@ describe('Complete User Workflows', () => {
             value: function(className) { return window.mockClassListClasses.includes(className); },
             configurable: true
         });
-        
-        // Mock successful responses
-        const mockFetch = jest.fn(() =>
-            Promise.resolve({
-                ok: true,
-                status: 200,
-                json: () => Promise.resolve(TestData.sampleWeatherData)
-            })
-        );
-        window.fetch = mockFetch;
-        window.mockFetch = mockFetch; // Store for assertions
 
         // Mock StateManager on both window and global scope  
         const mockStateManager = {
