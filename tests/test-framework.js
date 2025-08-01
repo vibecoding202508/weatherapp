@@ -32,13 +32,23 @@ class TestFramework {
             // Handle both sync and async test functions
             const result = testFunction();
             if (result && typeof result.then === 'function') {
-                // For async tests, we need to handle them properly
+                // For async tests, increment total immediately but handle results in promise
+                this.results.total++;
+                
                 result.then(() => {
                     this.results.passed++;
                     console.log(`✅ ${testName}`);
+                    // Display message in test results if available
+                    if (typeof window.displayMessage === 'function') {
+                        window.displayMessage(`✅ ${testName}`, 'success');
+                    }
                 }).catch((error) => {
                     this.results.failed++;
                     console.error(`❌ ${testName}`, error);
+                    // Display message in test results if available
+                    if (typeof window.displayMessage === 'function') {
+                        window.displayMessage(`❌ ${testName}: ${error.message}`, 'error');
+                    }
                 });
                 
                 // Run afterEach function if it exists
@@ -46,8 +56,17 @@ class TestFramework {
                     this.afterEachFn();
                 }
                 
-                this.results.total++;
                 return; // Exit early for async tests
+            }
+            
+            // For sync tests, handle normally
+            this.results.passed++;
+            this.results.total++;
+            console.log(`✅ ${testName}`);
+            
+            // Display message in test results if available
+            if (typeof window.displayMessage === 'function') {
+                window.displayMessage(`✅ ${testName}`, 'success');
             }
             
             // Run afterEach function if it exists
@@ -55,14 +74,21 @@ class TestFramework {
                 this.afterEachFn();
             }
             
-            this.results.passed++;
-            console.log(`✅ ${testName}`);
         } catch (error) {
             this.results.failed++;
+            this.results.total++;
             console.error(`❌ ${testName}`, error);
+            
+            // Display message in test results if available
+            if (typeof window.displayMessage === 'function') {
+                window.displayMessage(`❌ ${testName}: ${error.message}`, 'error');
+            }
+            
+            // Run afterEach function if it exists
+            if (this.afterEachFn) {
+                this.afterEachFn();
+            }
         }
-        
-        this.results.total++;
     }
 
     // Assertion methods
@@ -275,8 +301,13 @@ class TestFramework {
         console.log(`📊 Total: ${this.results.total}`);
         console.log(`📈 Success Rate: ${((this.results.passed / this.results.total) * 100).toFixed(1)}%`);
         
-        // Create visual results in DOM
-        this.createResultsDOM();
+        // Use the enhanced displayTestResults function from test-runner.html if available
+        if (typeof window.displayTestResults === 'function') {
+            window.displayTestResults(this.results);
+        } else {
+            // Fallback to legacy method
+            this.createResultsDOM();
+        }
     }
 
     createResultsDOM() {
