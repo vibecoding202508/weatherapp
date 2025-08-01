@@ -1,6 +1,7 @@
 // Tests for Weather Display Functionality
 
-describe('Weather Display', () => {
+window.runWeatherDisplayTestSuite = async function() {
+    await describe('Weather Display', async () => {
     let originalDOM;
     let mockDOM;
 
@@ -186,4 +187,5 @@ describe('Weather Display - Visibility', () => {
         WeatherDisplay.toggleVisibilityDetails();
         expect(mockExpandable.style.display).toBe('none');
     });
-});
+    });
+};

@@ -1,6 +1,7 @@
 // Tests for Weather API Functionality
 
-describe('Weather API', () => {
+window.runWeatherAPITestSuite = async function() {
+    await describe('Weather API', async () => {
     let originalFetch;
     let originalNavigator;
     let originalDOM;
@@ -553,4 +554,5 @@ describe('Weather API Integration', () => {
         
         await promise;
     });
-});
+    });
+};

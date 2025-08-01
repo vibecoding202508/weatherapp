@@ -1,6 +1,8 @@
 // Integration Tests for Complete Weather App Workflows
 
-describe('Weather App Integration', () => {
+window.runIntegrationTestSuite = async function() {
+    
+    await describe('Weather App Integration', async () => {
     let originalDOM;
     let originalFetch;
     let originalNavigator;
@@ -400,9 +402,9 @@ describe('Dark Mode Integration', () => {
         localStorage.setItem('darkMode', 'false');
         expect(DarkMode.getPreference()).toBe('light');
     });
-});
+    });
 
-describe('Complete User Workflows', () => {
+    await describe('Complete User Workflows', async () => {
     beforeEach(() => {
         // Setup complete app environment
         window.DOM = TestData.createMockDOM();
@@ -594,4 +596,5 @@ describe('Complete User Workflows', () => {
         expect(mockExpandable.classList.add).toHaveBeenCalledWith('expanded');
         expect(mockToggle.classList.add).toHaveBeenCalledWith('expanded');
     });
-});
+    });
+};

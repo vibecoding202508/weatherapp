@@ -370,7 +370,7 @@
             };
         }
 
-        function runAllTests() {
+        async function runAllTests() {
             clearOutput();
             interceptConsole();
             
@@ -378,39 +378,69 @@
             console.log('⏰ ' + new Date().toLocaleString() + '\n');
             
             // Reset test framework
-            TestFramework.results = { passed: 0, failed: 0, total: 0 };
+            if (window.TestFramework) {
+                window.TestFramework.results = { passed: 0, failed: 0, total: 0 };
+            }
             
-            setTimeout(() => {
-                try {
-                    // Load and run all test files
-                    loadTestSuite('utils.test.js');
-                    loadTestSuite('weather-display.test.js');
-                    loadTestSuite('weather-api.test.js');
-                    loadTestSuite('integration.test.js');
-                    
-                    setTimeout(() => {
-                        if (TestFramework && typeof TestFramework.displayResults === 'function') {
-                            TestFramework.displayResults();
-                        } else {
-                            console.error('TestFramework.displayResults is not available');
-                        }
-                        console.log('\n✅ Test suite completed!');
-                    }, 500);
-                } catch (error) {
-                    console.error('Test execution failed:', error);
+            try {
+                console.log('🔧 TestFramework available:', typeof window.TestFramework);
+                console.log('📋 Global functions available:');
+                console.log('  - describe:', typeof describe);
+                console.log('  - it:', typeof it);
+                console.log('  - expect:', typeof expect);
+                console.log('');
+                
+                // Re-execute all test suites
+                console.log('🔄 Re-executing test suites...\n');
+                
+                // Run each test suite manually
+                await runTestSuite('Utils Tests', window.runUtilTestSuite);
+                await runTestSuite('Weather Display Tests', window.runWeatherDisplayTestSuite);
+                await runTestSuite('Weather API Tests', window.runWeatherAPITestSuite);
+                await runTestSuite('Integration Tests', window.runIntegrationTestSuite);
+                
+                console.log('📊 Generating final results...\n');
+                
+                if (window.TestFramework && typeof window.TestFramework.displayResults === 'function') {
+                    window.TestFramework.displayResults();
+                } else {
+                    console.error('TestFramework.displayResults is not available');
+                    console.log('Available TestFramework methods:', Object.keys(window.TestFramework || {}));
+                    console.log('Final results: Passed:', window.TestFramework?.results?.passed || 0, 'Failed:', window.TestFramework?.results?.failed || 0);
                 }
-            }, 100);
+                console.log('\n✅ Test suite completed!');
+            } catch (error) {
+                console.error('Test execution failed:', error);
+                console.error('Error stack:', error.stack);
+            }
+        }
+        
+        async function runTestSuite(suiteName, testFunction) {
+            if (typeof testFunction === 'function') {
+                console.log(`🏃 Running ${suiteName}...`);
+                try {
+                    await testFunction();
+                } catch (error) {
+                    console.error(`❌ Error in ${suiteName}:`, error);
+                }
+            } else {
+                console.log(`⚠️ ${suiteName} function not found`);
+            }
         }
 
         function runUtilsTests() {
             clearOutput();
             interceptConsole();
-            TestFramework.results = { passed: 0, failed: 0, total: 0 };
+            if (window.TestFramework) {
+                window.TestFramework.results = { passed: 0, failed: 0, total: 0 };
+            }
             console.log('🔧 Running Utility Tests...\n');
-            loadTestSuite('utils.test.js');
+            if (window.runUtilTestSuite) {
+                window.runUtilTestSuite();
+            }
             setTimeout(() => {
-                if (TestFramework && typeof TestFramework.displayResults === 'function') {
-                    TestFramework.displayResults();
+                if (window.TestFramework && typeof window.TestFramework.displayResults === 'function') {
+                    window.TestFramework.displayResults();
                 }
             }, 300);
         }
@@ -418,12 +448,16 @@
         function runDisplayTests() {
             clearOutput();
             interceptConsole();
-            TestFramework.results = { passed: 0, failed: 0, total: 0 };
+            if (window.TestFramework) {
+                window.TestFramework.results = { passed: 0, failed: 0, total: 0 };
+            }
             console.log('🎨 Running Display Tests...\n');
-            loadTestSuite('weather-display.test.js');
+            if (window.runWeatherDisplayTestSuite) {
+                window.runWeatherDisplayTestSuite();
+            }
             setTimeout(() => {
-                if (TestFramework && typeof TestFramework.displayResults === 'function') {
-                    TestFramework.displayResults();
+                if (window.TestFramework && typeof window.TestFramework.displayResults === 'function') {
+                    window.TestFramework.displayResults();
                 }
             }, 300);
         }
@@ -431,12 +465,16 @@
         function runAPITests() {
             clearOutput();
             interceptConsole();
-            TestFramework.results = { passed: 0, failed: 0, total: 0 };
+            if (window.TestFramework) {
+                window.TestFramework.results = { passed: 0, failed: 0, total: 0 };
+            }
             console.log('🌐 Running API Tests...\n');
-            loadTestSuite('weather-api.test.js');
+            if (window.runWeatherAPITestSuite) {
+                window.runWeatherAPITestSuite();
+            }
             setTimeout(() => {
-                if (TestFramework && typeof TestFramework.displayResults === 'function') {
-                    TestFramework.displayResults();
+                if (window.TestFramework && typeof window.TestFramework.displayResults === 'function') {
+                    window.TestFramework.displayResults();
                 }
             }, 300);
         }
@@ -444,12 +482,16 @@
         function runIntegrationTests() {
             clearOutput();
             interceptConsole();
-            TestFramework.results = { passed: 0, failed: 0, total: 0 };
+            if (window.TestFramework) {
+                window.TestFramework.results = { passed: 0, failed: 0, total: 0 };
+            }
             console.log('🔗 Running Integration Tests...\n');
-            loadTestSuite('integration.test.js');
+            if (window.runIntegrationTestSuite) {
+                window.runIntegrationTestSuite();
+            }
             setTimeout(() => {
-                if (TestFramework && typeof TestFramework.displayResults === 'function') {
-                    TestFramework.displayResults();
+                if (window.TestFramework && typeof window.TestFramework.displayResults === 'function') {
+                    window.TestFramework.displayResults();
                 }
             }, 300);
         }
@@ -461,13 +503,47 @@
         }
 
         function clearOutput() {
-            consoleOutput = '';
-            const outputElement = document.getElementById('console-output');
-            outputElement.innerHTML = '<div class="loading">🧪 Ready to run tests...</div>';
-            
-            const resultsElement = document.getElementById('test-results');
-            resultsElement.innerHTML = '';
+            // Use original console methods to avoid interference with intercepted console
+            originalConsole.log('🗑️ Clear button clicked - clearing output...');
+            try {
+                // Clear the console output content
+                consoleOutput = '';
+                const outputElement = document.getElementById('console-output');
+                if (outputElement) {
+                    outputElement.innerHTML = '<div class="loading">🧪 Ready to run tests...</div>';
+                    originalConsole.log('✅ Console output cleared');
+                } else {
+                    originalConsole.error('❌ console-output element not found');
+                }
+                
+                // Clear the test results
+                const resultsElement = document.getElementById('test-results');
+                if (resultsElement) {
+                    resultsElement.innerHTML = '';
+                    originalConsole.log('✅ Test results cleared');
+                } else {
+                    originalConsole.error('❌ test-results element not found');
+                }
+                
+                // Reset test framework results if available
+                if (window.TestFramework) {
+                    window.TestFramework.results = { passed: 0, failed: 0, total: 0 };
+                    originalConsole.log('✅ TestFramework results reset');
+                }
+                
+                originalConsole.log('🧪 Clear operation completed');
+            } catch (error) {
+                originalConsole.error('❌ Error in clearOutput function:', error);
+            }
         }
+
+        // Make functions globally accessible
+        window.clearOutput = clearOutput;
+        window.runAllTests = runAllTests;
+        window.runUtilsTests = runUtilsTests;
+        window.runDisplayTests = runDisplayTests;
+        window.runAPITests = runAPITests;
+        window.runIntegrationTests = runIntegrationTests;
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
@@ -476,11 +552,23 @@
             
             // Verify TestFramework is loaded
             setTimeout(() => {
-                if (typeof TestFramework !== 'undefined' && TestFramework.displayResults) {
+                console.log('🔍 Debugging TestFramework loading...');
+                console.log('  - typeof TestFramework:', typeof TestFramework);
+                console.log('  - typeof window.TestFramework:', typeof window.TestFramework);
+                console.log('  - window.TestFramework exists:', !!window.TestFramework);
+                console.log('  - window.TestFramework.displayResults exists:', !!(window.TestFramework && window.TestFramework.displayResults));
+                
+                if (typeof window.TestFramework !== 'undefined' && window.TestFramework && window.TestFramework.displayResults) {
                     console.log('✅ TestFramework loaded successfully');
                 } else {
                     console.error('❌ TestFramework not loaded properly');
+                    console.log('Available window properties:', Object.keys(window).filter(key => key.includes('Test') || key.includes('framework')));
                 }
+                
+                // Also check if global test functions are available
+                console.log('  - describe function:', typeof describe);
+                console.log('  - it function:', typeof it);  
+                console.log('  - expect function:', typeof expect);
             }, 100);
         });
     </script>
