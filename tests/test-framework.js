@@ -29,7 +29,26 @@ class TestFramework {
                 this.beforeEachFn();
             }
             
-            testFunction();
+            // Handle both sync and async test functions
+            const result = testFunction();
+            if (result && typeof result.then === 'function') {
+                // For async tests, we need to handle them properly
+                result.then(() => {
+                    this.results.passed++;
+                    console.log(`✅ ${testName}`);
+                }).catch((error) => {
+                    this.results.failed++;
+                    console.error(`❌ ${testName}`, error);
+                });
+                
+                // Run afterEach function if it exists
+                if (this.afterEachFn) {
+                    this.afterEachFn();
+                }
+                
+                this.results.total++;
+                return; // Exit early for async tests
+            }
             
             // Run afterEach function if it exists
             if (this.afterEachFn) {
@@ -338,3 +357,12 @@ window.jest = {
 
 // Export framework for advanced usage
 window.TestFramework = testFramework;
+
+// Ensure TestFramework is available globally
+if (typeof window.TestFramework === 'undefined') {
+    window.TestFramework = testFramework;
+}
+
+console.log('🔧 TestFramework initialized and available globally');
+console.log('🔧 TestFramework type:', typeof window.TestFramework);
+console.log('🔧 TestFramework has displayResults:', !!(window.TestFramework && window.TestFramework.displayResults));

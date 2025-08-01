@@ -1,6 +1,7 @@
 // Tests for Utility Functions
 
-describe('Visibility Utils', () => {
+window.runUtilTestSuite = async function() {
+    await describe('Visibility Utils', async () => {
     it('should analyze excellent visibility correctly', () => {
         const analysis = VisibilityUtils.analyzeVisibility(25, 'Clear');
         
@@ -281,4 +282,5 @@ describe('UI Utils', () => {
         UIUtils.showLoadingWithMessage('Custom loading message');
         expect(window.DOM.loading.style.display).toBe('flex');
     });
-});
+    });
+};
