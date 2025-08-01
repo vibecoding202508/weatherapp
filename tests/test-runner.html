@@ -3,457 +3,129 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weather App - Test Runner</title>
+    <title>Weather App Tests</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 0 20px;
+            background-color: #f5f5f5;
+        }
+        #test-summary {
+            background: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-suite {
+            background: #fff;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-suite h3 {
+            margin-top: 0;
             color: #333;
         }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            backdrop-filter: blur(10px);
+        .test-case {
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 3px;
         }
-
-        h1 {
-            text-align: center;
-            margin-bottom: 30px;
-            color: #4a5568;
-            font-size: 2.5rem;
-            font-weight: 300;
+        .test-case.passed {
+            background-color: #e8f5e9;
+            color: #2e7d32;
         }
-
-        .test-controls {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
+        .test-case.failed {
+            background-color: #ffebee;
+            color: #c62828;
         }
-
-        .btn {
-            background: linear-gradient(135deg, #667eea, #764ba2);
+        .error {
+            font-family: monospace;
+            font-size: 0.9em;
+            margin-left: 20px;
+            color: #d32f2f;
+        }
+        button {
+            background-color: #4CAF50;
             color: white;
+            padding: 10px 20px;
             border: none;
-            padding: 12px 24px;
-            border-radius: 25px;
-            font-size: 1rem;
+            border-radius: 4px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn:active {
-            transform: translateY(0);
-        }
-
-        .btn.secondary {
-            background: linear-gradient(135deg, #a8edea, #fed6e3);
-            color: #4a5568;
-        }
-
-        .test-summary {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 30px;
-            color: white;
-            text-align: center;
-        }
-
-        .test-summary h2 {
-            margin-bottom: 20px;
-            font-size: 2rem;
-            font-weight: 400;
-        }
-
-        .test-stats {
-            display: flex;
-            justify-content: center;
-            gap: 30px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-
-        .stat {
-            text-align: center;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 10px;
-            padding: 15px 20px;
-            backdrop-filter: blur(10px);
-        }
-
-        .stat .number {
-            font-size: 2rem;
-            font-weight: bold;
-            display: block;
-        }
-
-        .stat .label {
-            font-size: 0.9rem;
-            opacity: 0.9;
-        }
-
-        .success-rate {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 15px;
-        }
-
-        .progress-bar {
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 25px;
-            height: 20px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            border-radius: 25px;
-            transition: width 0.5s ease;
-            background: rgba(255, 255, 255, 0.8);
-        }
-
-        .console-output {
-            background: #1a202c;
-            color: #e2e8f0;
-            border-radius: 10px;
-            padding: 20px;
-            font-family: 'Courier New', monospace;
-            font-size: 0.9rem;
-            max-height: 400px;
-            overflow-y: auto;
-            white-space: pre-wrap;
-            border: 2px solid #2d3748;
-        }
-
-        .status-indicator {
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            margin-right: 8px;
-        }
-
-        .status-running {
-            background: #ed8936;
-            animation: pulse 1.5s infinite;
-        }
-
-        .status-passed {
-            background: #48bb78;
-        }
-
-        .status-failed {
-            background: #f56565;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        .test-info {
-            background: rgba(74, 85, 104, 0.1);
-            border-radius: 10px;
-            padding: 20px;
+            font-size: 16px;
             margin-bottom: 20px;
         }
-
-        .test-info h3 {
-            margin-bottom: 10px;
-            color: #4a5568;
+        button:hover {
+            background-color: #45a049;
         }
-
-        .test-info ul {
-            list-style-type: none;
-            padding-left: 0;
-        }
-
-        .test-info li {
-            padding: 5px 0;
-            position: relative;
-            padding-left: 20px;
-        }
-
-        .test-info li::before {
-            content: "✓";
-            color: #48bb78;
-            font-weight: bold;
-            position: absolute;
-            left: 0;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #667eea;
-            font-size: 1.2rem;
-        }
-
-        .loading i {
-            font-size: 2rem;
-            margin-bottom: 15px;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                padding: 20px;
-            }
-            
-            h1 {
-                font-size: 2rem;
-            }
-            
-            .test-stats {
-                gap: 15px;
-            }
-            
-            .stat {
-                padding: 10px 15px;
-            }
-            
-            .stat .number {
-                font-size: 1.5rem;
-            }
-        }
+        .passed { color: #2e7d32; }
+        .failed { color: #c62828; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🧪 Weather App Test Suite</h1>
-        
-        <div class="test-controls">
-            <button class="btn" onclick="runAllTests()">▶️ Run All Tests</button>
-            <button class="btn secondary" onclick="runUtilsTests()">🔧 Utils Tests</button>
-            <button class="btn secondary" onclick="runDisplayTests()">🎨 Display Tests</button>
-            <button class="btn secondary" onclick="runAPITests()">🌐 API Tests</button>
-            <button class="btn secondary" onclick="runIntegrationTests()">🔗 Integration Tests</button>
-            <button class="btn secondary" onclick="clearOutput()">🗑️ Clear</button>
+    <h1>Weather App Tests</h1>
+    <button onclick="TestFramework.runTests()">Run Tests</button>
+    <div id="test-summary"></div>
+    <div id="test-results"></div>
+
+    <!-- Hidden DOM elements required for testing -->
+    <div style="display: none;">
+        <div id="loading">
+            <p>Loading...</p>
         </div>
-
-        <div class="test-info">
-            <h3>📋 Test Coverage</h3>
-            <ul>
-                <li>Visibility Analysis (7 test categories)</li>
-                <li>Mathematical Utilities (temperature, random numbers)</li>
-                <li>Date & Time Formatting</li>
-                <li>String Manipulation</li>
-                <li>Input Validation</li>
-                <li>DOM Utilities</li>
-                <li>Weather Display Functions</li>
-                <li>API Integration with Mocks</li>
-                <li>Complete User Workflows</li>
-                <li>Dark Mode Functionality</li>
-                <li>Error Handling & Edge Cases</li>
-            </ul>
+        <div id="error">
+            <p id="error-message"></p>
         </div>
-
-        <div id="test-results"></div>
-
-        <div class="console-output" id="console-output">
-            <div class="loading">
-                <div>🧪 Test Runner Ready</div>
-                <div style="margin-top: 10px; font-size: 0.9rem; opacity: 0.7;">
-                    Click "Run All Tests" to start the comprehensive test suite
-                </div>
+        <div id="weather-content">
+            <div id="location"></div>
+            <div id="current-temp"></div>
+            <div id="current-icon"></div>
+            <div id="current-condition"></div>
+            <div id="feels-like"></div>
+            <div id="visibility"></div>
+            <div id="humidity"></div>
+            <div id="wind"></div>
+            <div id="uv-index"></div>
+            <div id="uv-warning"></div>
+            <div id="forecast-container"></div>
+            <div id="weather-alerts">
+                <div id="alerts-container"></div>
             </div>
         </div>
+        <div id="search-container">
+            <input type="text" id="location-search">
+            <button id="search-btn">Search</button>
+            <button id="current-location-btn">Current Location</button>
+        </div>
+        <button id="dark-mode-toggle">
+            <span id="toggle-icon"></span>
+        </button>
     </div>
 
-    <!-- Load Jest for advanced mocking -->
-    <script>
-        // Simple Jest-like mock implementation for browser
-        window.jest = {
-            fn: function(implementation) {
-                const mockFn = function(...args) {
-                    mockFn.calls.push(args);
-                    if (implementation) {
-                        return implementation(...args);
-                    }
-                };
-                mockFn.calls = [];
-                mockFn.mockReturnValue = function(value) {
-                    return function() { return value; };
-                };
-                return mockFn;
-            }
-        };
-    </script>
-
-    <!-- Load App Scripts -->
+    <!-- Load dependencies -->
     <script src="../js/config.js"></script>
-    <script src="../js/dom.js"></script>
-    <script src="../js/state.js"></script>
     <script src="../js/utils.js"></script>
-    <script src="../js/dark-mode.js"></script>
     <script src="../js/weather-api.js"></script>
+    <script src="../js/state.js"></script>
+    <script src="../js/dom.js"></script>
     <script src="../js/weather-display.js"></script>
-    <script src="../js/weather-animations.js"></script>
-    <script src="../js/weather-alerts.js"></script>
 
-    <!-- Load Test Framework and Data -->
+    <!-- Load test framework -->
     <script src="test-framework.js"></script>
+    
+    <!-- Load test data and mocks -->
     <script src="test-data.js"></script>
-
-    <!-- Load Test Suites -->
+    
+    <!-- Load test files -->
     <script src="utils.test.js"></script>
-    <script src="weather-display.test.js"></script>
-    <script src="weather-api.test.js"></script>
-    <script src="integration.test.js"></script>
 
     <script>
-        // Capture console output
-        const originalConsole = {
-            log: console.log,
-            error: console.error,
-            group: console.group,
-            groupEnd: console.groupEnd
-        };
-
-        let consoleOutput = '';
-
-        function interceptConsole() {
-            const outputElement = document.getElementById('console-output');
-            
-            console.log = function(...args) {
-                const message = args.join(' ');
-                consoleOutput += message + '\n';
-                outputElement.textContent = consoleOutput;
-                outputElement.scrollTop = outputElement.scrollHeight;
-                originalConsole.log(...args);
-            };
-
-            console.error = function(...args) {
-                const message = '❌ ' + args.join(' ');
-                consoleOutput += message + '\n';
-                outputElement.textContent = consoleOutput;
-                outputElement.scrollTop = outputElement.scrollHeight;
-                originalConsole.error(...args);
-            };
-
-            console.group = function(name) {
-                consoleOutput += '\n📁 ' + name + '\n';
-                outputElement.textContent = consoleOutput;
-                originalConsole.group(name);
-            };
-
-            console.groupEnd = function() {
-                consoleOutput += '\n';
-                outputElement.textContent = consoleOutput;
-                originalConsole.groupEnd();
-            };
-        }
-
-        function runAllTests() {
-            clearOutput();
-            interceptConsole();
-            
-            console.log('🚀 Starting Weather App Test Suite...\n');
-            console.log('⏰ ' + new Date().toLocaleString() + '\n');
-            
-            // Reset test framework
-            TestFramework.results = { passed: 0, failed: 0, total: 0 };
-            
-            setTimeout(() => {
-                try {
-                    // Load and run all test files
-                    loadTestSuite('utils.test.js');
-                    loadTestSuite('weather-display.test.js');
-                    loadTestSuite('weather-api.test.js');
-                    loadTestSuite('integration.test.js');
-                    
-                    setTimeout(() => {
-                        TestFramework.displayResults();
-                        console.log('\n✅ Test suite completed!');
-                    }, 500);
-                } catch (error) {
-                    console.error('Test execution failed:', error);
-                }
-            }, 100);
-        }
-
-        function runUtilsTests() {
-            clearOutput();
-            interceptConsole();
-            TestFramework.results = { passed: 0, failed: 0, total: 0 };
-            console.log('🔧 Running Utility Tests...\n');
-            loadTestSuite('utils.test.js');
-            setTimeout(() => TestFramework.displayResults(), 300);
-        }
-
-        function runDisplayTests() {
-            clearOutput();
-            interceptConsole();
-            TestFramework.results = { passed: 0, failed: 0, total: 0 };
-            console.log('🎨 Running Display Tests...\n');
-            loadTestSuite('weather-display.test.js');
-            setTimeout(() => TestFramework.displayResults(), 300);
-        }
-
-        function runAPITests() {
-            clearOutput();
-            interceptConsole();
-            TestFramework.results = { passed: 0, failed: 0, total: 0 };
-            console.log('🌐 Running API Tests...\n');
-            loadTestSuite('weather-api.test.js');
-            setTimeout(() => TestFramework.displayResults(), 300);
-        }
-
-        function runIntegrationTests() {
-            clearOutput();
-            interceptConsole();
-            TestFramework.results = { passed: 0, failed: 0, total: 0 };
-            console.log('🔗 Running Integration Tests...\n');
-            loadTestSuite('integration.test.js');
-            setTimeout(() => TestFramework.displayResults(), 300);
-        }
-
-        function loadTestSuite(filename) {
-            console.log(`📝 Loading ${filename}...`);
-            // Test suites are already loaded via script tags
-            // This function serves as a placeholder for organization
-        }
-
-        function clearOutput() {
-            consoleOutput = '';
-            const outputElement = document.getElementById('console-output');
-            outputElement.innerHTML = '<div class="loading">🧪 Ready to run tests...</div>';
-            
-            const resultsElement = document.getElementById('test-results');
-            resultsElement.innerHTML = '';
-        }
-
-        // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🧪 Test Runner Initialized');
-            console.log('📱 Ready to test Weather App functionality');
-        });
+        // Auto-run tests when page loads
+        window.onload = () => TestFramework.runTests();
     </script>
 </body>
 </html>

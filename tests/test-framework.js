@@ -1,191 +1,108 @@
-// Simple Test Framework for Weather App
-class TestFramework {
-    constructor() {
-        this.tests = [];
-        this.results = {
-            passed: 0,
-            failed: 0,
-            total: 0
-        };
-        this.currentSuite = null;
-    }
+// Simple Test Framework
+const TestFramework = {
+    tests: [],
+    results: {
+        passed: 0,
+        failed: 0,
+        total: 0
+    },
 
-    // Create a test suite
-    describe(suiteName, suiteFunction) {
-        this.currentSuite = suiteName;
-        console.group(`📋 ${suiteName}`);
-        suiteFunction();
-        console.groupEnd();
-        this.currentSuite = null;
-    }
+    describe: function(description, testFn) {
+        this.currentSuite = description;
+        testFn();
+    },
 
-    // Create a test case
-    it(testName, testFunction) {
-        const fullTestName = this.currentSuite ? `${this.currentSuite} > ${testName}` : testName;
-        
-        try {
-            testFunction();
-            this.results.passed++;
-            console.log(`✅ ${testName}`);
-        } catch (error) {
-            this.results.failed++;
-            console.error(`❌ ${testName}`, error);
-        }
-        
-        this.results.total++;
-    }
+    it: function(description, testFn) {
+        this.tests.push({
+            suite: this.currentSuite,
+            description: description,
+            testFn: testFn
+        });
+    },
 
-    // Assertion methods
-    expect(actual) {
+    expect: function(actual) {
         return {
-            toBe: (expected) => {
+            toBe: function(expected) {
                 if (actual !== expected) {
-                    throw new Error(`Expected ${actual} to be ${expected}`);
+                    throw new Error(`Expected ${expected} but got ${actual}`);
                 }
             },
-            
-            toEqual: (expected) => {
-                if (JSON.stringify(actual) !== JSON.stringify(expected)) {
-                    throw new Error(`Expected ${JSON.stringify(actual)} to equal ${JSON.stringify(expected)}`);
+            toEqual: function(expected) {
+                const actualStr = JSON.stringify(actual);
+                const expectedStr = JSON.stringify(expected);
+                if (actualStr !== expectedStr) {
+                    throw new Error(`Expected ${expectedStr} but got ${actualStr}`);
                 }
             },
-            
-            toBeGreaterThan: (expected) => {
-                if (actual <= expected) {
-                    throw new Error(`Expected ${actual} to be greater than ${expected}`);
-                }
-            },
-            
-            toBeLessThan: (expected) => {
-                if (actual >= expected) {
-                    throw new Error(`Expected ${actual} to be less than ${expected}`);
-                }
-            },
-            
-            toContain: (expected) => {
-                if (!actual.includes(expected)) {
-                    throw new Error(`Expected ${actual} to contain ${expected}`);
-                }
-            },
-            
-            toBeTruthy: () => {
+            toBeTruthy: function() {
                 if (!actual) {
                     throw new Error(`Expected ${actual} to be truthy`);
                 }
             },
-            
-            toBeFalsy: () => {
+            toBeFalsy: function() {
                 if (actual) {
                     throw new Error(`Expected ${actual} to be falsy`);
                 }
             },
-            
-            toThrow: () => {
-                let threw = false;
-                try {
-                    actual();
-                } catch (error) {
-                    threw = true;
-                }
-                if (!threw) {
-                    throw new Error('Expected function to throw an error');
+            toContain: function(expected) {
+                if (!actual.includes(expected)) {
+                    throw new Error(`Expected ${actual} to contain ${expected}`);
                 }
             },
-            
-            toHaveProperty: (property) => {
-                if (!(property in actual)) {
-                    throw new Error(`Expected object to have property ${property}`);
+            toBeGreaterThan: function(expected) {
+                if (!(actual > expected)) {
+                    throw new Error(`Expected ${actual} to be greater than ${expected}`);
                 }
             },
-            
-            toBeInstanceOf: (constructor) => {
-                if (!(actual instanceof constructor)) {
-                    throw new Error(`Expected ${actual} to be instance of ${constructor.name}`);
+            toBeLessThan: function(expected) {
+                if (!(actual < expected)) {
+                    throw new Error(`Expected ${actual} to be less than ${expected}`);
                 }
             }
         };
-    }
+    },
 
-    // Mock functions
-    mock(object, method, implementation) {
-        const original = object[method];
-        object[method] = implementation || (() => {});
+    runTests: async function() {
+        const resultsList = document.getElementById('test-results');
+        resultsList.innerHTML = '';
+        this.results = { passed: 0, failed: 0, total: 0 };
         
-        return {
-            restore: () => {
-                object[method] = original;
-            },
-            calls: []
-        };
-    }
+        let currentSuiteElement = null;
+        let currentSuite = '';
 
-    // Setup and teardown
-    beforeEach(fn) {
-        this.beforeEachFn = fn;
-    }
+        for (const test of this.tests) {
+            if (currentSuite !== test.suite) {
+                currentSuite = test.suite;
+                currentSuiteElement = document.createElement('div');
+                currentSuiteElement.className = 'test-suite';
+                currentSuiteElement.innerHTML = `<h3>${test.suite}</h3>`;
+                resultsList.appendChild(currentSuiteElement);
+            }
 
-    afterEach(fn) {
-        this.afterEachFn = fn;
-    }
+            const resultElement = document.createElement('div');
+            resultElement.className = 'test-case';
+            
+            try {
+                await test.testFn();
+                this.results.passed++;
+                resultElement.className += ' passed';
+                resultElement.innerHTML = `✓ ${test.description}`;
+            } catch (error) {
+                this.results.failed++;
+                resultElement.className += ' failed';
+                resultElement.innerHTML = `✗ ${test.description}<br><span class="error">${error.message}</span>`;
+            }
+            
+            this.results.total++;
+            currentSuiteElement.appendChild(resultElement);
+        }
 
-    // Run all tests and display results
-    displayResults() {
-        console.log('\n' + '='.repeat(50));
-        console.log('🧪 TEST RESULTS');
-        console.log('='.repeat(50));
-        console.log(`✅ Passed: ${this.results.passed}`);
-        console.log(`❌ Failed: ${this.results.failed}`);
-        console.log(`📊 Total: ${this.results.total}`);
-        console.log(`📈 Success Rate: ${((this.results.passed / this.results.total) * 100).toFixed(1)}%`);
-        
-        // Create visual results in DOM
-        this.createResultsDOM();
-    }
-
-    createResultsDOM() {
-        const resultsContainer = document.getElementById('test-results');
-        if (!resultsContainer) return;
-
-        const successRate = (this.results.passed / this.results.total) * 100;
-        const statusColor = successRate === 100 ? '#27ae60' : successRate >= 80 ? '#f39c12' : '#e74c3c';
-
-        resultsContainer.innerHTML = `
-            <div class="test-summary">
-                <h2>🧪 Test Results</h2>
-                <div class="test-stats">
-                    <div class="stat passed">
-                        <span class="number">${this.results.passed}</span>
-                        <span class="label">Passed</span>
-                    </div>
-                    <div class="stat failed">
-                        <span class="number">${this.results.failed}</span>
-                        <span class="label">Failed</span>
-                    </div>
-                    <div class="stat total">
-                        <span class="number">${this.results.total}</span>
-                        <span class="label">Total</span>
-                    </div>
-                </div>
-                <div class="success-rate" style="color: ${statusColor}">
-                    Success Rate: ${successRate.toFixed(1)}%
-                </div>
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width: ${successRate}%; background-color: ${statusColor}"></div>
-                </div>
-            </div>
+        // Update summary
+        const summary = document.getElementById('test-summary');
+        summary.innerHTML = `
+            Total: ${this.results.total} | 
+            Passed: <span class="passed">${this.results.passed}</span> | 
+            Failed: <span class="failed">${this.results.failed}</span>
         `;
     }
-}
-
-// Create global test framework instance
-const testFramework = new TestFramework();
-
-// Export global functions for easier testing
-window.describe = testFramework.describe.bind(testFramework);
-window.it = testFramework.it.bind(testFramework);
-window.expect = testFramework.expect.bind(testFramework);
-window.beforeEach = testFramework.beforeEach.bind(testFramework);
-window.afterEach = testFramework.afterEach.bind(testFramework);
-
-// Export framework for advanced usage
-window.TestFramework = testFramework;
+};
