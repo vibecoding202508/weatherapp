@@ -16,6 +16,15 @@ describe('Weather App Integration', () => {
         window.DOM = TestData.createMockDOM();
         window.localStorage = TestData.createMockLocalStorage();
         window.API_KEY = 'test_api_key_12345678';
+        window.BASE_URL = 'https://api.weatherapi.com/v1';
+        
+        // Set global variables for weather API
+        global.API_KEY = 'test_api_key_12345678';
+        global.BASE_URL = 'https://api.weatherapi.com/v1';
+        global.CONFIG = {
+            GEOLOCATION_TIMEOUT: 10000,
+            GEOLOCATION_MAX_AGE: 300000
+        };
 
         // Setup successful API responses
         const mockFetch = jest.fn(() =>
@@ -108,6 +117,12 @@ describe('Weather App Integration', () => {
             showWeatherContent: jest.fn(),
             showLoadingWithMessage: jest.fn()
         };
+        
+        window.ValidationUtils = {
+            isValidAPIKey: jest.fn(() => true),
+            isValidCoordinates: jest.fn(() => true),
+            isValidLocation: jest.fn(() => true)
+        };
     });
 
     afterEach(() => {
@@ -134,6 +149,11 @@ describe('Weather App Integration', () => {
         if (window.mockClassListClasses) {
             delete window.mockClassListClasses;
         }
+        
+        // Clean up global variables
+        delete global.API_KEY;
+        delete global.BASE_URL;
+        delete global.CONFIG;
     });
 
     it('should complete full app initialization with current location', (done) => {
@@ -388,6 +408,15 @@ describe('Complete User Workflows', () => {
         window.DOM = TestData.createMockDOM();
         window.localStorage = TestData.createMockLocalStorage();
         window.API_KEY = 'test_api_key_12345678';
+        window.BASE_URL = 'https://api.weatherapi.com/v1';
+        
+        // Set global variables for weather API
+        global.API_KEY = 'test_api_key_12345678';
+        global.BASE_URL = 'https://api.weatherapi.com/v1';
+        global.CONFIG = {
+            GEOLOCATION_TIMEOUT: 10000,
+            GEOLOCATION_MAX_AGE: 300000
+        };
         
         // Setup successful API responses
         const mockFetch = jest.fn(() =>
@@ -419,17 +448,6 @@ describe('Complete User Workflows', () => {
             value: function(className) { return window.mockClassListClasses.includes(className); },
             configurable: true
         });
-        
-        // Mock successful responses
-        const mockFetch = jest.fn(() =>
-            Promise.resolve({
-                ok: true,
-                status: 200,
-                json: () => Promise.resolve(TestData.sampleWeatherData)
-            })
-        );
-        window.fetch = mockFetch;
-        window.mockFetch = mockFetch; // Store for assertions
 
         // Mock StateManager on both window and global scope  
         const mockStateManager = {
@@ -486,6 +504,12 @@ describe('Complete User Workflows', () => {
             showWeatherContent: jest.fn(),
             showLoadingWithMessage: jest.fn()
         };
+        
+        window.ValidationUtils = {
+            isValidAPIKey: jest.fn(() => true),
+            isValidCoordinates: jest.fn(() => true),
+            isValidLocation: jest.fn(() => true)
+        };
     });
     
     afterEach(() => {
@@ -510,6 +534,11 @@ describe('Complete User Workflows', () => {
             }
             delete window.originalWeatherDisplay;
         }
+        
+        // Clean up global variables
+        delete global.API_KEY;
+        delete global.BASE_URL;
+        delete global.CONFIG;
     });
 
     it('should handle complete search workflow', async () => {

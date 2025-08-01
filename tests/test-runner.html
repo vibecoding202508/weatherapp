@@ -389,7 +389,11 @@
                     loadTestSuite('integration.test.js');
                     
                     setTimeout(() => {
-                        TestFramework.displayResults();
+                        if (TestFramework && typeof TestFramework.displayResults === 'function') {
+                            TestFramework.displayResults();
+                        } else {
+                            console.error('TestFramework.displayResults is not available');
+                        }
                         console.log('\n✅ Test suite completed!');
                     }, 500);
                 } catch (error) {
@@ -404,7 +408,11 @@
             TestFramework.results = { passed: 0, failed: 0, total: 0 };
             console.log('🔧 Running Utility Tests...\n');
             loadTestSuite('utils.test.js');
-            setTimeout(() => TestFramework.displayResults(), 300);
+            setTimeout(() => {
+                if (TestFramework && typeof TestFramework.displayResults === 'function') {
+                    TestFramework.displayResults();
+                }
+            }, 300);
         }
 
         function runDisplayTests() {
@@ -413,7 +421,11 @@
             TestFramework.results = { passed: 0, failed: 0, total: 0 };
             console.log('🎨 Running Display Tests...\n');
             loadTestSuite('weather-display.test.js');
-            setTimeout(() => TestFramework.displayResults(), 300);
+            setTimeout(() => {
+                if (TestFramework && typeof TestFramework.displayResults === 'function') {
+                    TestFramework.displayResults();
+                }
+            }, 300);
         }
 
         function runAPITests() {
@@ -422,7 +434,11 @@
             TestFramework.results = { passed: 0, failed: 0, total: 0 };
             console.log('🌐 Running API Tests...\n');
             loadTestSuite('weather-api.test.js');
-            setTimeout(() => TestFramework.displayResults(), 300);
+            setTimeout(() => {
+                if (TestFramework && typeof TestFramework.displayResults === 'function') {
+                    TestFramework.displayResults();
+                }
+            }, 300);
         }
 
         function runIntegrationTests() {
@@ -431,7 +447,11 @@
             TestFramework.results = { passed: 0, failed: 0, total: 0 };
             console.log('🔗 Running Integration Tests...\n');
             loadTestSuite('integration.test.js');
-            setTimeout(() => TestFramework.displayResults(), 300);
+            setTimeout(() => {
+                if (TestFramework && typeof TestFramework.displayResults === 'function') {
+                    TestFramework.displayResults();
+                }
+            }, 300);
         }
 
         function loadTestSuite(filename) {
@@ -453,6 +473,15 @@
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🧪 Test Runner Initialized');
             console.log('📱 Ready to test Weather App functionality');
+            
+            // Verify TestFramework is loaded
+            setTimeout(() => {
+                if (typeof TestFramework !== 'undefined' && TestFramework.displayResults) {
+                    console.log('✅ TestFramework loaded successfully');
+                } else {
+                    console.error('❌ TestFramework not loaded properly');
+                }
+            }, 100);
         });
     </script>
 </body>

@@ -338,3 +338,10 @@ window.jest = {
 
 // Export framework for advanced usage
 window.TestFramework = testFramework;
+
+// Ensure TestFramework is available globally
+if (typeof TestFramework === 'undefined') {
+    window.TestFramework = testFramework;
+}
+
+console.log('🔧 TestFramework initialized and available globally');
