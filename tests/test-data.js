@@ -19,5 +19,10 @@ window.DOMUtils = {
         if (element) {
             element.textContent = text;
         }
+    },
+    setHTML: (element, html) => {
+        if (element) {
+            element.innerHTML = html;
+        }
     }
 };
