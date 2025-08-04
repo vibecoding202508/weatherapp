@@ -5,72 +5,450 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Weather App Tests</title>
     <style>
+        :root {
+            --primary-color: #4CAF50;
+            --primary-hover: #45a049;
+            --success-color: #2e7d32;
+            --success-bg: #e8f5e9;
+            --error-color: #c62828;
+            --error-bg: #ffebee;
+            --warning-color: #f57c00;
+            --warning-bg: #fff3e0;
+            --info-color: #1976d2;
+            --info-bg: #e3f2fd;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            max-width: 800px;
-            margin: 20px auto;
-            padding: 0 20px;
-            background-color: #f5f5f5;
-        }
-        #test-summary {
-            background: #fff;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .test-suite {
-            background: #fff;
-            padding: 15px;
-            margin-bottom: 15px;
-            border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .test-suite h3 {
-            margin-top: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
             color: #333;
         }
-        .test-case {
-            padding: 8px;
-            margin: 5px 0;
-            border-radius: 3px;
-        }
-        .test-case.passed {
-            background-color: #e8f5e9;
-            color: #2e7d32;
-        }
-        .test-case.failed {
-            background-color: #ffebee;
-            color: #c62828;
-        }
-        .error {
-            font-family: monospace;
-            font-size: 0.9em;
-            margin-left: 20px;
-            color: #d32f2f;
-        }
-        button {
-            background-color: #4CAF50;
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
             color: white;
-            padding: 10px 20px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin: 0;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            font-weight: 300;
+        }
+
+        .header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .controls {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        button {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+            color: white;
+            padding: 12px 30px;
             border: none;
-            border-radius: 4px;
+            border-radius: var(--border-radius);
             cursor: pointer;
             font-size: 16px;
-            margin-bottom: 20px;
+            font-weight: 500;
+            transition: var(--transition);
+            box-shadow: var(--box-shadow);
+            position: relative;
+            overflow: hidden;
         }
+
         button:hover {
-            background-color: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
         }
-        .passed { color: #2e7d32; }
-        .failed { color: #c62828; }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .progress-container {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--box-shadow);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: var(--transition);
+        }
+
+        .progress-container.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .progress-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .progress-stats {
+            display: flex;
+            gap: 15px;
+            font-size: 0.9rem;
+        }
+
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .progress-bar-container {
+            background: #f0f0f0;
+            border-radius: 10px;
+            height: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), var(--primary-hover));
+            width: 0%;
+            transition: width 0.3s ease;
+            position: relative;
+        }
+
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .current-test {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #666;
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .current-test.visible {
+            opacity: 1;
+        }
+
+        #test-summary {
+            background: white;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            box-shadow: var(--box-shadow);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: var(--transition);
+        }
+
+        #test-summary.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .test-suite {
+            background: white;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: var(--transition);
+            border-left: 4px solid var(--info-color);
+        }
+
+        .test-suite.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .test-suite h3 {
+            margin: 0 0 15px 0;
+            color: #333;
+            font-size: 1.3rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .test-suite h3::before {
+            content: '📋';
+            font-size: 1.2rem;
+        }
+
+        .test-case {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border-radius: 6px;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            opacity: 0;
+            transform: translateX(20px);
+            animation: slideIn 0.3s ease forwards;
+        }
+
+        @keyframes slideIn {
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .test-case.passed {
+            background: var(--success-bg);
+            color: var(--success-color);
+            border-left: 3px solid var(--success-color);
+        }
+
+        .test-case.passed::before {
+            content: '✅';
+            font-size: 1.1rem;
+        }
+
+        .test-case.failed {
+            background: var(--error-bg);
+            color: var(--error-color);
+            border-left: 3px solid var(--error-color);
+        }
+
+        .test-case.failed::before {
+            content: '❌';
+            font-size: 1.1rem;
+        }
+
+        .test-case:hover {
+            transform: translateX(5px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .error {
+            font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Roboto Mono', monospace;
+            font-size: 0.85rem;
+            margin: 8px 0 0 30px;
+            padding: 10px;
+            background: rgba(255,255,255,0.7);
+            border-radius: 4px;
+            border-left: 3px solid var(--error-color);
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .passed { 
+            color: var(--success-color);
+            font-weight: 600;
+        }
+        
+        .failed { 
+            color: var(--error-color);
+            font-weight: 600;
+        }
+
+        .loading-indicator {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: white;
+        }
+
+        .loading-indicator.visible {
+            display: block;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .summary-stat {
+            text-align: center;
+            padding: 15px;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+
+        .summary-stat.total {
+            background: var(--info-bg);
+            color: var(--info-color);
+        }
+
+        .summary-stat.passed {
+            background: var(--success-bg);
+            color: var(--success-color);
+        }
+
+        .summary-stat.failed {
+            background: var(--error-bg);
+            color: var(--error-color);
+        }
+
+        .summary-stat-number {
+            font-size: 2rem;
+            display: block;
+        }
+
+        .summary-stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .completion-celebration {
+            text-align: center;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: var(--border-radius);
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            opacity: 0;
+            transform: scale(0.8);
+            transition: var(--transition);
+        }
+
+        .completion-celebration.visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .completion-celebration h2 {
+            margin: 0 0 10px 0;
+            font-size: 1.5rem;
+        }
+
+        .celebration-emoji {
+            font-size: 3rem;
+            animation: bounce 0.6s ease-in-out infinite alternate;
+        }
+
+        @keyframes bounce {
+            to { transform: translateY(-10px); }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .summary-stats {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
-    <h1>Weather App Tests</h1>
-    <button id="run-tests-btn">Run Tests</button>
+    <div class="header">
+        <h1>Weather App Tests</h1>
+        <p>Comprehensive test suite for weather application functionality</p>
+    </div>
+
+    <div class="controls">
+        <button id="run-tests-btn">🚀 Run Tests</button>
+    </div>
+
+    <div class="loading-indicator" id="loading-indicator">
+        <div class="spinner"></div>
+        <p>Loading test modules...</p>
+    </div>
+
+    <div class="progress-container" id="progress-container">
+        <div class="progress-header">
+            <div class="progress-title">Test Progress</div>
+            <div class="progress-stats">
+                <div class="stat">
+                    <span>🏃‍♂️</span>
+                    <span id="current-progress">0/0</span>
+                </div>
+                <div class="stat passed">
+                    <span>✅</span>
+                    <span id="passed-count">0</span>
+                </div>
+                <div class="stat failed">
+                    <span>❌</span>
+                    <span id="failed-count">0</span>
+                </div>
+            </div>
+        </div>
+        <div class="progress-bar-container">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+        <div class="current-test" id="current-test">Ready to start testing...</div>
+    </div>
+
     <div id="test-summary"></div>
     <div id="test-results"></div>
+
+    <div class="completion-celebration" id="completion-celebration">
+        <div class="celebration-emoji">🎉</div>
+        <h2>All Tests Completed!</h2>
+        <p>Great job! Check the results above.</p>
+    </div>
 
     <!-- Hidden DOM elements required for testing -->
     <div style="display: none;">
@@ -160,7 +538,115 @@
             });
         }
 
-        // Enhanced run tests with error handling
+        // Progress tracking variables
+        let currentTestIndex = 0;
+        let totalTests = 0;
+        let passedTests = 0;
+        let failedTests = 0;
+
+        // UI element references
+        const elements = {
+            button: null,
+            loadingIndicator: null,
+            progressContainer: null,
+            progressBar: null,
+            currentProgress: null,
+            passedCount: null,
+            failedCount: null,
+            currentTest: null,
+            testSummary: null,
+            testResults: null,
+            celebration: null
+        };
+
+        // Initialize UI elements
+        function initializeElements() {
+            elements.button = document.getElementById('run-tests-btn');
+            elements.loadingIndicator = document.getElementById('loading-indicator');
+            elements.progressContainer = document.getElementById('progress-container');
+            elements.progressBar = document.getElementById('progress-bar');
+            elements.currentProgress = document.getElementById('current-progress');
+            elements.passedCount = document.getElementById('passed-count');
+            elements.failedCount = document.getElementById('failed-count');
+            elements.currentTest = document.getElementById('current-test');
+            elements.testSummary = document.getElementById('test-summary');
+            elements.testResults = document.getElementById('test-results');
+            elements.celebration = document.getElementById('completion-celebration');
+        }
+
+        // Show loading state
+        function showLoading() {
+            elements.button.disabled = true;
+            elements.button.textContent = '🔄 Running Tests...';
+            elements.loadingIndicator.classList.add('visible');
+            elements.progressContainer.classList.remove('visible');
+            elements.testSummary.classList.remove('visible');
+            elements.celebration.classList.remove('visible');
+            elements.testResults.innerHTML = '';
+        }
+
+        // Show progress
+        function showProgress() {
+            elements.loadingIndicator.classList.remove('visible');
+            elements.progressContainer.classList.add('visible');
+            elements.currentTest.classList.add('visible');
+        }
+
+        // Update progress
+        function updateProgress(testName) {
+            const percentage = totalTests > 0 ? (currentTestIndex / totalTests) * 100 : 0;
+            elements.progressBar.style.width = `${percentage}%`;
+            elements.currentProgress.textContent = `${currentTestIndex}/${totalTests}`;
+            elements.passedCount.textContent = passedTests;
+            elements.failedCount.textContent = failedTests;
+            elements.currentTest.textContent = testName ? `Running: ${testName}` : 'Preparing tests...';
+        }
+
+        // Show completion
+        function showCompletion() {
+            elements.progressContainer.classList.remove('visible');
+            elements.button.disabled = false;
+            elements.button.textContent = '🚀 Run Tests';
+            
+            // Update summary with enhanced styling
+            const successRate = totalTests > 0 ? ((passedTests / totalTests) * 100).toFixed(1) : 0;
+            elements.testSummary.innerHTML = `
+                <div class="progress-header">
+                    <div class="progress-title">Test Results Summary</div>
+                    <div class="progress-stats">
+                        <div class="stat">
+                            <span>📊</span>
+                            <span>${successRate}% Success Rate</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="summary-stats">
+                    <div class="summary-stat total">
+                        <span class="summary-stat-number">${totalTests}</span>
+                        <span class="summary-stat-label">Total Tests</span>
+                    </div>
+                    <div class="summary-stat passed">
+                        <span class="summary-stat-number">${passedTests}</span>
+                        <span class="summary-stat-label">Passed</span>
+                    </div>
+                    <div class="summary-stat failed">
+                        <span class="summary-stat-number">${failedTests}</span>
+                        <span class="summary-stat-label">Failed</span>
+                    </div>
+                </div>
+            `;
+            
+            elements.testSummary.classList.add('visible');
+            
+            // Show celebration if all tests passed
+            if (failedTests === 0 && totalTests > 0) {
+                setTimeout(() => {
+                    elements.celebration.classList.add('visible');
+                }, 500);
+            }
+        }
+
+        // Enhanced run tests with beautiful animations
         function runTestsWithErrorHandling() {
             try {
                 console.log('Button clicked - attempting to run tests...');
@@ -178,41 +664,155 @@
                     throw new Error('No tests found in TestFramework.tests');
                 }
                 
-                console.log('Running tests...');
+                // Reset counters
+                currentTestIndex = 0;
+                totalTests = TestFramework.tests.length;
+                passedTests = 0;
+                failedTests = 0;
                 
                 // Show loading state
-                const summary = document.getElementById('test-summary');
-                const results = document.getElementById('test-results');
-                summary.innerHTML = '<div style="color: #007bff; font-weight: bold;">🔄 Running tests...</div>';
-                results.innerHTML = '<div style="padding: 20px; text-align: center;">Please wait while tests are running...</div>';
+                showLoading();
                 
-                // Run tests with a small delay to show loading state
+                // Show progress after a brief loading period
                 setTimeout(() => {
-                    TestFramework.runTests();
-                    console.log('Tests completed');
-                }, 100);
+                    showProgress();
+                    updateProgress('Initializing test framework...');
+                    
+                    // Start running tests
+                    setTimeout(() => {
+                        runTestsWithProgress();
+                    }, 500);
+                }, 800);
                 
             } catch (error) {
                 console.error('Error running tests:', error);
+                showError(error);
+            }
+        }
+
+        // Run tests with progress tracking
+        async function runTestsWithProgress() {
+            try {
+                // Override the original test runner to add progress tracking
+                const originalCreateElement = document.createElement.bind(document);
+                const originalGetElementById = document.getElementById.bind(document);
                 
-                // Display error in the UI
-                const summary = document.getElementById('test-summary');
-                const results = document.getElementById('test-results');
+                const resultsList = originalGetElementById('test-results');
+                if (!resultsList) {
+                    throw new Error('Test results container not found');
+                }
                 
-                summary.innerHTML = `<div style="color: red; font-weight: bold;">❌ Error: ${error.message}</div>`;
-                results.innerHTML = `
-                    <div style="background: #ffebee; padding: 15px; border-radius: 5px; color: #c62828;">
-                        <h3>Debugging Information:</h3>
-                        <ul>
-                            <li>TestFramework type: ${typeof TestFramework}</li>
-                            <li>TestFramework.runTests type: ${typeof (TestFramework && TestFramework.runTests)}</li>
-                            <li>Tests array length: ${TestFramework && TestFramework.tests ? TestFramework.tests.length : 'undefined'}</li>
-                            <li>Error: ${error.message}</li>
-                        </ul>
-                        <p><strong>Check the browser console for more details.</strong></p>
+                resultsList.innerHTML = '';
+                
+                let currentSuiteElement = null;
+                let currentSuite = '';
+                let testDelay = 0;
+
+                for (const test of TestFramework.tests) {
+                    // Update progress
+                    currentTestIndex++;
+                    updateProgress(`${test.suite} - ${test.description}`);
+                    
+                    // Add delay for visual effect
+                    await new Promise(resolve => setTimeout(resolve, testDelay));
+                    testDelay = Math.min(testDelay + 50, 200); // Gradually increase delay, max 200ms
+                    
+                    if (currentSuite !== test.suite) {
+                        currentSuite = test.suite;
+                        currentSuiteElement = originalCreateElement('div');
+                        currentSuiteElement.className = 'test-suite';
+                        currentSuiteElement.innerHTML = `<h3>${test.suite}</h3>`;
+                        
+                        try {
+                            resultsList.appendChild(currentSuiteElement);
+                            // Animate suite appearance
+                            setTimeout(() => {
+                                currentSuiteElement.classList.add('visible');
+                            }, 50);
+                        } catch (e) {
+                            console.error('Failed to append suite element:', e);
+                            continue;
+                        }
+                    }
+
+                    const resultElement = originalCreateElement('div');
+                    resultElement.className = 'test-case';
+                    
+                    try {
+                        // Run beforeEach if defined
+                        if (TestFramework._beforeEach) {
+                            await TestFramework._beforeEach();
+                        }
+                        
+                        await test.testFn();
+                        passedTests++;
+                        resultElement.classList.add('passed');
+                        resultElement.innerHTML = `${test.description}`;
+                    } catch (error) {
+                        failedTests++;
+                        resultElement.classList.add('failed');
+                        resultElement.innerHTML = `${test.description}<br><span class="error">${error.message}</span>`;
+                    } finally {
+                        // Run afterEach if defined
+                        if (TestFramework._afterEach) {
+                            try {
+                                await TestFramework._afterEach();
+                            } catch (e) {
+                                console.error('AfterEach failed:', e);
+                            }
+                        }
+                    }
+                    
+                    // Add result element with animation
+                    try {
+                        if (currentSuiteElement && typeof currentSuiteElement.appendChild === 'function') {
+                            currentSuiteElement.appendChild(resultElement);
+                        }
+                    } catch (e) {
+                        console.error('Failed to append result element:', e);
+                        try {
+                            resultsList.appendChild(resultElement);
+                        } catch (e2) {
+                            console.error('Failed to append to results list:', e2);
+                        }
+                    }
+                    
+                    // Update progress counters
+                    updateProgress(`${test.suite} - ${test.description}`);
+                }
+
+                // Complete progress
+                updateProgress('Tests completed!');
+                showCompletion();
+                
+            } catch (error) {
+                console.error('Test runner error:', error);
+                showError(error);
+            }
+        }
+
+        // Show error state
+        function showError(error) {
+            elements.button.disabled = false;
+            elements.button.textContent = '🚀 Run Tests';
+            elements.loadingIndicator.classList.remove('visible');
+            elements.progressContainer.classList.remove('visible');
+            
+            elements.testSummary.innerHTML = `<div style="color: var(--error-color); font-weight: bold;">❌ Error: ${error.message}</div>`;
+            elements.testResults.innerHTML = `
+                <div style="background: var(--error-bg); padding: 15px; border-radius: var(--border-radius); color: var(--error-color);">
+                    <h3>Debugging Information:</h3>
+                    <ul>
+                        <li>TestFramework type: ${typeof TestFramework}</li>
+                        <li>TestFramework.runTests type: ${typeof (TestFramework && TestFramework.runTests)}</li>
+                        <li>Tests array length: ${TestFramework && TestFramework.tests ? TestFramework.tests.length : 'undefined'}</li>
+                        <li>Error: ${error.message}</li>
+                    </ul>
+                    <p><strong>Check the browser console for more details.</strong></p>
                 </div>
             `;
-            }
+            
+            elements.testSummary.classList.add('visible');
         }
 
         // Initialize when page loads
@@ -220,17 +820,23 @@
             console.log('Page loaded, initializing test runner...');
             debugTestRunner();
             
+            // Initialize UI elements
+            initializeElements();
+            
             // Set up the button click handler
-            const button = document.getElementById('run-tests-btn');
-            if (button) {
-                button.onclick = runTestsWithErrorHandling;
+            if (elements.button) {
+                elements.button.onclick = runTestsWithErrorHandling;
                 console.log('Button click handler set up');
-                        } else {
+            } else {
                 console.error('Run Tests button not found');
             }
             
-            // Don't auto-run tests, wait for button click
-            console.log('Test runner ready. Click the "Run Tests" button to start.');
+            // Show initial loading indicator briefly
+            elements.loadingIndicator.classList.add('visible');
+            setTimeout(() => {
+                elements.loadingIndicator.classList.remove('visible');
+                console.log('Test runner ready. Click the "Run Tests" button to start.');
+            }, 1000);
         };
     </script>
 </body>
