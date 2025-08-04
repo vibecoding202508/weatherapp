@@ -1,8 +1,8 @@
 # 🌤️ Simple Weather App
 
-> A sophisticated, feature-rich weather application built with modern web technologies and a modular JavaScript architecture.
+> A sophisticated, feature-rich weather application built with modern web technologies, modular JavaScript architecture, and comprehensive testing infrastructure.
 
-![Weather App Preview](https://img.shields.io/badge/Status-Production%20Ready-brightgreen) ![JavaScript](https://img.shields.io/badge/JavaScript-ES6+-yellow) ![CSS3](https://img.shields.io/badge/CSS3-Modern-blue) ![API](https://img.shields.io/badge/API-WeatherAPI.com-orange)
+![Weather App Preview](https://img.shields.io/badge/Status-Production%20Ready-brightgreen) ![JavaScript](https://img.shields.io/badge/JavaScript-ES6+-yellow) ![CSS3](https://img.shields.io/badge/CSS3-Modern-blue) ![API](https://img.shields.io/badge/API-WeatherAPI.com-orange) ![Tests](https://img.shields.io/badge/Tests-25%2B%20Comprehensive-success)
 
 ## 🌟 Key Features
 
@@ -29,6 +29,7 @@
 - **Modern Web Standards** - ES6 modules, CSS Grid, Flexbox, CSS Variables
 - **Performance Optimized** - Efficient API usage, caching, and minimal DOM manipulation
 - **Robust Error Handling** - Comprehensive error management with user-friendly feedback
+- **Comprehensive Testing** - Custom test framework with 25+ tests covering all major functionality
 
 ---
 
@@ -156,6 +157,69 @@ graph TD
 
 ---
 
+## 🧪 Testing Infrastructure
+
+### Comprehensive Test Suite
+The application includes a **robust testing infrastructure** with a custom-built test framework and comprehensive test coverage:
+
+#### 🎯 **Test Coverage**
+- **Search Functionality** - Location search, geolocation, input validation
+- **State Management** - Application state handling, data persistence, state reset
+- **Utility Functions** - Date formatting, string operations, validation helpers
+- **UI Components** - Weather display, dark mode toggle, responsive behavior
+- **Weather Features** - API integration, alerts system, animations
+- **Error Handling** - Graceful degradation, fallback mechanisms
+
+#### 🚀 **Modern Test Runner**
+Launch the interactive test runner: `tests/test-runner.html`
+
+**Features:**
+- **Beautiful UI** - Modern interface with progress tracking and animations
+- **Real-time Progress** - Live test execution with detailed progress indicators
+- **Comprehensive Reports** - Pass/fail statistics with detailed error messages
+- **Visual Feedback** - Color-coded results with success celebrations
+- **Mobile Responsive** - Works perfectly across all devices
+
+#### 📋 **Test Modules**
+| Test File | Purpose | Test Count |
+|-----------|---------|------------|
+| `search-minimal.test.js` | Search functionality & DOM interaction | 8+ tests |
+| `state-manager.test.js` | Application state management | 12+ tests |
+| `utils.test.js` | Utility functions & helpers | Multiple tests |
+| `weather-display-minimal.test.js` | UI rendering & display | Multiple tests |
+| `dark-mode-minimal.test.js` | Theme switching functionality | Multiple tests |
+| `weather-alerts-simple.test.js` | Alert system testing | Multiple tests |
+
+#### 🛠️ **Running Tests**
+1. **Start Local Server** (required for module imports)
+   ```bash
+   python3 -m http.server 8080
+   ```
+
+2. **Open Test Runner**
+   ```
+   http://localhost:8080/tests/test-runner.html
+   ```
+
+3. **Click "🚀 Run Tests"** and watch the magic happen!
+
+#### 🧩 **Test Framework Features**
+- **Custom Assertions** - `expect().toBe()`, `toEqual()`, `toBeNull()`, `not.toThrow()`
+- **Test Organization** - `describe()` blocks for logical grouping
+- **Setup/Teardown** - `beforeEach()` for test isolation
+- **Error Handling** - Graceful handling of missing DOM elements
+- **Mocking Support** - DOM element mocking for unit testing
+- **Async Support** - Promise-based test execution
+
+#### 📊 **Test Quality Features**
+- **DOM Safety** - Tests handle missing DOM elements gracefully
+- **State Isolation** - Each test runs with clean state
+- **Error Recovery** - Framework continues even if individual tests fail
+- **Comprehensive Coverage** - Tests cover both happy path and error conditions
+- **Real Environment** - Tests run against actual application code
+
+---
+
 ## 💻 Development & Customization
 
 ### Local Development Setup
@@ -238,6 +302,7 @@ Solution: Alerts are Europe-only; ensure location is European
 - **Network Tab**: Check API response status
 - **Application Tab**: Verify local storage for preferences
 - **Console Logs**: Detailed error messages for each module
+- **Test Runner**: Use `tests/test-runner.html` to verify component functionality
 
 ---
 
@@ -275,8 +340,9 @@ We welcome contributions! This modular architecture makes it easy to:
 
 1. **🎯 Find the Right Module**: Each feature has a dedicated module
 2. **📋 Follow Patterns**: Consistent code style and structure
-3. **🧪 Test Thoroughly**: Verify across browsers and devices
+3. **🧪 Test Thoroughly**: Run test suite and add tests for new features
 4. **📚 Document Changes**: Update relevant documentation
+5. **✅ Verify Quality**: Use the test runner to ensure no regressions
 
 ### Feature Requests & Bug Reports
 - Use GitHub Issues for bug reports and feature requests
