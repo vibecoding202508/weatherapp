@@ -9,7 +9,7 @@ const METEOALARM_EUROPE_FEED = 'meteoalarm-legacy-rss-europe';
 // App configuration
 const CONFIG = {
     REFRESH_INTERVAL: 600000, // 10 minutes
-    GEOLOCATION_TIMEOUT: 10000,
+    GEOLOCATION_TIMEOUT: 30000, // Increased to 30 seconds
     GEOLOCATION_MAX_AGE: 300000, // 5 minutes
     MAX_ALERTS_DISPLAY: 10,
     MAX_RAIN_PARTICLES: 8,

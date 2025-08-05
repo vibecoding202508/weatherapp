@@ -11,7 +11,7 @@ const WeatherAPI = {
     },
 
     // Get weather data using current location
-    getWeatherData: () => {
+    getWeatherData: (retryWithLowerAccuracy = false) => {
         if (!WeatherAPI.checkAPIKey()) return;
 
         UIUtils.showLoading();
@@ -20,6 +20,17 @@ const WeatherAPI = {
             UIUtils.showError('Geolocation is not supported by this browser. Please update your browser or try a different one.');
             return;
         }
+
+        // Use different settings for retry
+        const geoOptions = retryWithLowerAccuracy ? {
+            enableHighAccuracy: false,
+            timeout: CONFIG.GEOLOCATION_TIMEOUT * 2,
+            maximumAge: CONFIG.GEOLOCATION_MAX_AGE
+        } : {
+            enableHighAccuracy: true,
+            timeout: CONFIG.GEOLOCATION_TIMEOUT,
+            maximumAge: CONFIG.GEOLOCATION_MAX_AGE
+        };
 
         navigator.geolocation.getCurrentPosition(
             (position) => {
@@ -30,29 +41,43 @@ const WeatherAPI = {
             (error) => {
                 console.error('Geolocation error:', error);
                 let errorMessage = 'Unable to get your location. ';
+                let showSearchFallback = true;
                 
                 switch(error.code) {
                     case error.PERMISSION_DENIED:
-                        errorMessage += 'Please allow location access and try again.';
+                        errorMessage += 'Please allow location access and try again, or search for your city manually.';
                         break;
                     case error.POSITION_UNAVAILABLE:
-                        errorMessage += 'Location information is unavailable.';
+                        errorMessage += 'Location information is unavailable. Please search for your city manually.';
                         break;
                     case error.TIMEOUT:
-                        errorMessage += 'Location request timed out.';
+                        errorMessage += 'Location request timed out. This can happen on slower connections or if GPS is having trouble. Please try again or search for your city manually.';
                         break;
                     default:
-                        errorMessage += 'An unknown error occurred.';
+                        errorMessage += 'An unknown error occurred. Please search for your city manually.';
                         break;
                 }
                 
                 UIUtils.showError(errorMessage);
+                
+                // Show search input as fallback and offer retry option
+                if (showSearchFallback) {
+                    const searchInput = document.getElementById('locationSearch');
+                    if (searchInput) {
+                        searchInput.focus();
+                        searchInput.placeholder = 'Enter your city name (e.g., London, UK)';
+                    }
+                    
+                    // Offer retry with lower accuracy if this was the first attempt
+                    if (!retryWithLowerAccuracy && error.code === error.TIMEOUT) {
+                        console.log('Retrying geolocation with lower accuracy settings...');
+                        setTimeout(() => {
+                            WeatherAPI.getWeatherData(true);
+                        }, 2000);
+                    }
+                }
             },
-            {
-                enableHighAccuracy: true,
-                timeout: CONFIG.GEOLOCATION_TIMEOUT,
-                maximumAge: CONFIG.GEOLOCATION_MAX_AGE
-            }
+            geoOptions
         );
     },
 
