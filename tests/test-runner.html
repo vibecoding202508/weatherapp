@@ -496,6 +496,7 @@
     <script src="../js/weather-display.js"></script>
     <script src="../js/dark-mode.js"></script>
     <script src="../js/search.js"></script>
+    <script src="../js/weather-history.js"></script>
     <script src="../js/weather-alerts.js"></script>
 
     <!-- Load test framework -->
@@ -507,6 +508,7 @@
     <!-- Load test files -->
     <script src="utils.test.js"></script>
     <script src="state-manager.test.js"></script>
+    <script src="weather-history.test.js"></script>
     <script src="minimal-weather-test.js"></script>
     <script src="search-minimal.test.js"></script>
     <script src="dark-mode-minimal.test.js"></script>
@@ -525,6 +527,7 @@
             console.log('MathUtils:', typeof MathUtils);
             console.log('VisibilityUtils:', typeof VisibilityUtils);
             console.log('DOMUtils:', typeof DOMUtils);
+            console.log('WeatherHistory:', typeof WeatherHistory);
             
             // Check if TestFramework methods exist
             if (typeof TestFramework === 'object') {

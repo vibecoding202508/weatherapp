@@ -79,6 +79,11 @@ const WeatherAPI = {
             StateManager.setWeatherData(data);
             WeatherDisplay.displayWeatherData(data);
             
+            // Add to weather history
+            if (typeof WeatherHistory !== 'undefined') {
+                WeatherHistory.addToHistory(data);
+            }
+            
         } catch (error) {
             console.error('Error fetching weather data for location:', error);
             UIUtils.showError(error.message || 'Failed to fetch weather data for this location. Please try a different city name.');
@@ -106,6 +111,11 @@ const WeatherAPI = {
             const data = await response.json();
             StateManager.setWeatherData(data);
             WeatherDisplay.displayWeatherData(data);
+            
+            // Add to weather history
+            if (typeof WeatherHistory !== 'undefined') {
+                WeatherHistory.addToHistory(data);
+            }
             
         } catch (error) {
             console.error('Error fetching weather data:', error);

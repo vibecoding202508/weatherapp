@@ -21,6 +21,11 @@ const App = {
             // Initialize search functionality
             Search.initialize();
             
+            // Initialize weather history
+            if (typeof WeatherHistory !== 'undefined') {
+                WeatherHistory.initialize();
+            }
+            
             // Set current location as active initially
             DOMUtils.addClass(DOM.currentLocationBtn, 'active');
             
@@ -123,6 +128,7 @@ const App = {
                 dom: !!DOM,
                 darkMode: !!DarkMode,
                 search: !!Search,
+                weatherHistory: !!WeatherHistory,
                 weatherAPI: !!WeatherAPI,
                 weatherDisplay: !!WeatherDisplay,
                 weatherAnimations: !!WeatherAnimations,

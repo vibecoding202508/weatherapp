@@ -113,6 +113,11 @@ const TestFramework = {
                     if (actual._callCount > 0) {
                         throw new Error(`Expected mock function not to have been called, but it was called ${actual._callCount} times`);
                     }
+                },
+                toBeNull: function() {
+                    if (actual === null) {
+                        throw new Error(`Expected ${actual} not to be null`);
+                    }
                 }
             }
         };
